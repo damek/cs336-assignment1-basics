@@ -118,12 +118,12 @@ class BPETrainer:
 
     def _heap_best_pair(self) -> tuple[int, int] | None:
         while self.heap:
-            neg_cnt   = self.heap[0][0]     # first field
-            p0, p1    = self.heap[0][-2:]   # last two fields
+            neg_cnt   = self.heap[0][0]     
+            p0, p1    = self.heap[0][-2:]   #
             real_cnt  = self.pair_counts.get((p0, p1), 0)
             if real_cnt and -neg_cnt == real_cnt:   # fresh
                 return p0, p1
-            heappop(self.heap)                       # stale → drop
+            heappop(self.heap)                       
         return None
 
 
@@ -394,7 +394,6 @@ class DocumentSampler:
                 # Read a large chunk of text from the file
                 chunk = f.read(self.read_chunk_size)
                 
-                # If f.read() returns an empty string, we've reached the end of the file.
                 if not chunk:
                     break
                 
