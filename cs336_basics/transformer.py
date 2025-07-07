@@ -43,13 +43,12 @@ class RMSNorm(nn.Module):
 class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model: int, d_ff: int | None=None, device=None, dtype=None):
         super().__init__()
-        print("d_ff", d_ff)
         if d_ff == None:
             print("d_ff", d_ff)           
             d_ff = int(np.ceil(8*d_model // 3 / 64) * 64)
-        self.W1 = Linear(d_ff, d_model, device=device, dtype=dtype)
-        self.W2 = Linear(d_ff, d_model, device=device, dtype=dtype)
-        self.W3 = Linear(d_model, d_ff, device=device, dtype=dtype)
+        self.W1 = Linear(in_features=d_model, out_features=d_ff, device=device, dtype=dtype)
+        self.W2 = Linear(in_features=d_ff, out_features=d_model, device=device, dtype=dtype)
+        self.W3 = Linear(in_features=d_model, out_features=d_ff, device=device, dtype=dtype)
 
     def _silu(self, param: torch.tensor): 
         return param*torch.sigmoid(param)
@@ -105,8 +104,9 @@ def scaled_dot_product_attention(Q:torch.Tensor, K: torch.Tensor, V, mask = None
     QKT = einsum(Q, K, "batch_size ... queries d_k, batch_size ... keys d_k -> batch_size ... queries keys")
     QKT.mul_(1/np.sqrt(d_k))
     softmax_dim = len(QKT.shape) - 1
+    seq_length = Q.shape[-2]
     if mask != None:
-        result = torch.where(mask,
+        result = torch.where(mask[:seq_length,:seq_length],
         0,
         -float('inf'))
         A = softmax(QKT + result,dim = softmax_dim)
@@ -118,12 +118,13 @@ class multihead_self_attention(nn.Module):
     def __init__(self, d_model:int, num_heads:int, max_seq_length:None, theta:None, device=None, dtype=None):
         super().__init__()
 
-        self.W_QKV = Linear(3*d_model, d_model, device=device, dtype=dtype)
+        self.W_QKV = Linear(d_model, 3*d_model, device=device, dtype=dtype)
         self.W_O = Linear(d_model, d_model,device=device, dtype=dtype)
         self.d_model = d_model
         self.num_heads = num_heads
         # if max_seq_length != None and theta != None:
         self.R = Rope(theta=theta, max_seq_len=max_seq_length, d_k=d_model//num_heads, device=device)
+        self.cmask = torch.ones((max_seq_length,max_seq_length), dtype=torch.bool).tril().to(device)
 
 
     def forward(self, X:torch.tensor, token_positions = None):
@@ -133,9 +134,9 @@ class multihead_self_attention(nn.Module):
         if token_positions == None:
             token_positions = torch.arange(seq_length, device=QKV.device)
         QKV[:2, :] = self.R.forward(QKV[:2, :], token_positions=token_positions)
-        cmask = torch.ones((seq_length,seq_length), dtype=torch.bool).tril()
         # may need to squeeze here, not sure.
-        A = scaled_dot_product_attention(QKV[0, :], QKV[1,:], QKV[2, :], mask=cmask)
+        # cmask = torch.ones((seq_length,seq_length), dtype=torch.bool).tril()
+        A = scaled_dot_product_attention(QKV[0, :], QKV[1,:], QKV[2, :], mask=self.cmask)
         # print(A.shape, self.W_O.param.shape)
         A = rearrange(A, "num_heads batch_size seq_length d_head -> batch_size seq_length (num_heads d_head)")
         out = self.W_O.forward(A)
@@ -174,3 +175,15 @@ class transformer_lm(nn.Module):
         X = self.output_layer(X)
         return X
         # return softmax(X, dim=0) model does not include softmax.
+
+# I am assuming there will only be one batch dimension here. Otherwise targets needs more care.
+def cross_entropy(logits: torch.tensor, targets):
+    logits = rearrange(logits, "b c ... -> (b c) ...")
+    targets = rearrange(targets, "b c ... -> (b c) ...")
+    m = torch.max(logits,dim=-1, keepdim=True)
+    subm = logits - torch.broadcast_to(m.values, logits.shape)
+    x_exp = torch.exp(subm)
+    sums = torch.sum(x_exp, dim =-1, keepdim=True)
+    result = torch.gather(subm, 1, targets.unsqueeze(1)).sum()/len(targets)
+    diff = result - torch.mean(torch.log(sums))
+    return -diff
