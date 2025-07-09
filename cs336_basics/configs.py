@@ -21,12 +21,13 @@ class TransformerCfg:
     d_ff:            int = int(math.ceil(8*d_model // 3 / 64) * 64)   
     rope_theta_parameter:   float = 10000
     eps:                 float = 1e-6
+    activation:          str = ""
 
     # ─── Training loop ────────────────────────────────────────────────────
     batch_size:         int = 32
     num_training_steps: int = 10_000
-    validation_freq:    int = 500
-    print_freq:         int = 100
+    validation_every:    int = 500
+    print_every:         int = 100
     seed:               int = 1337
 
     # ─── Optimiser & schedule ─────────────────────────────────────────────
@@ -54,17 +55,35 @@ class TransformerCfg:
     
 
 @dataclass
-class TinyStoriesCfg(TransformerCfg):
+class TSCfg(TransformerCfg):
     # ─── Dataset ───────────────────────────────────────────────────────────
-    train_data:      str = "data/tiny_stories/train.bin"
-    val_data:        str = "data/tiny_stories/val.bin"
-    vocab_path:      str = "data/tiny_stories/vocab.txt"
-    merges_path:     str = "data/tiny_stories/merges.txt"
-    wandb_project:   str = "tiny-stories"
-    wandb_base_name: str = "lr {lr} batch_size {batch_size} "
-    checkpoint_dir:  str = "tiny_stories_runs/"
+    train_data:      str = "data/TinyStories/train.bin"
+    val_data:        str = "data/TinyStories/val.bin"
+    vocab_path:      str = "data/TinyStories/vocab.txt"
+    merges_path:     str = "data/TinyStories/merges.txt"
+    wandb_project:   str = "TinyStories"
+    wandb_base_name: str = "{group} lr{lr} bs{batch_size}"
+    checkpoint_dir:  str = "TinyStories_runs/"
 
-# utils_cfg.py  (import this from train.py, sweep.py, etc.)
+@dataclass 
+class TSRemovePostRMSNorm(TSCfg):
+    post_RMS: bool = False
+
+@dataclass 
+class TSPreNormRMS(TSCfg):
+    pre_RMS: bool = True
+    post_RMS: bool = False
+
+@dataclass 
+class TSRemoveRope(TSCfg):
+    rope_theta_parameter: float = 0
+
+@dataclass 
+class TSSiLU(TSCfg):
+    activation: str = "silu"
+
+
+# ----- Load config -----
 import argparse, json, importlib, pathlib
 from configs import TransformerCfg          # base class
 

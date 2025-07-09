@@ -25,12 +25,17 @@ def eval(windowed_validation : torch.Tensor, model, args):
     return loss
 
 def main():
-    cfg, _ = configs.load_cfg()  
+    cfg, _ = configs.load_cfg() 
+    group=cfg.__class__.__name__ 
     purpose = cfg.wandb_project + "_" + cfg.wandb_base_name.split()[0]
+    fmt_args  = {**cfg.__dict__, "group": group}
+    run_name  = cfg.wandb_base_name.format(**fmt_args) 
+    purpose   = f"{cfg.wandb_project}_{run_name}"      
+    timestamped_name = f"{run_name}_{time.strftime('%Y%m%d_%H%M')}"
     run_dir   = pathlib.Path(f"checkpoints/{purpose}")
     cfg.checkpoint_path = str(run_dir) + "/"   # ensure trailing slash
     args = cfg
-    run = wandb.init(project=args.wandb_project, name=args.wandb_base_name.format(**args.__dict__) + f" {time.strftime('%Y%m%d_%H%M')}", config=args)
+    run = wandb.init(project=args.wandb_project, group=group, name=timestamped_name, config=args)
     print("Training with args", args)
     train = np.memmap(args.train_data,dtype=np.uint16,mode="r")    
     validation = np.memmap(args.val_data,dtype=np.uint16,mode="r")
@@ -63,12 +68,13 @@ def main():
         ema_loss = 0
     optimizer.lr = args.lr
 
-    if args.validation_freq == None: 
-        args.validation_freq = 100
+    if args.validation_every == None: 
+        args.validation_every = 100
 
     lambda_ema = .98
     wandb.watch(model, log="all", log_freq=100)
     time_total = 0
+    print("print_every", args.print_every)
     for iter in range(current_iter, args.num_training_steps + current_iter):
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_numpy(train, batch_size=args.batch_size, context_length=args.context_length, device=args.device)
@@ -79,7 +85,7 @@ def main():
         ema_loss = (1-lambda_ema) * loss.detach() + lambda_ema*ema_loss
         time_end = time.perf_counter()  
         time_total += time_end - time_start
-        if iter % args.print_freq == 0:
+        if iter % args.print_every == 0:
             print(f"Iteration: {iter}, ema loss {ema_loss}")
             wandb.log({
                 "EMA train loss": ema_loss,
@@ -87,7 +93,7 @@ def main():
             }, step=iter)
 
 
-        if (iter+1) % args.validation_freq == 0:  
+        if (iter+1) % args.validation_every == 0:  
             print("Validating")
             valid_loss = eval(windowed_validation, model, args)
             wandb.log({
