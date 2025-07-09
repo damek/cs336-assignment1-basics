@@ -3,8 +3,8 @@
 from huggingface_hub import snapshot_download
 from pathlib import Path
 
-REPO_ID   = "damekdavis/tiny_stories"   
-TARGET    = Path("tiny_stories")
+REPO_ID   = "damekdavis/OpenWebText32k"   
+TARGET    = Path("OpenWebText32k")
 
 def main():
     TARGET.mkdir(parents=True, exist_ok=True)
