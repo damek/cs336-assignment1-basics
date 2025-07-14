@@ -1,37 +1,34 @@
 # syntax=docker/dockerfile:1.6
-FROM nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04 
+FROM nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04
 
-# Install Python 3.11 (available in Ubuntu 22.04 repos)
+# -------- system Python & tooling ------------------------------------------------
 RUN apt-get update && \
     apt-get install -y --no-install-recommends python3.11 python3.11-venv && \
     rm -rf /var/lib/apt/lists/*
 
-# Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-# Create non-root user with UID 1000 (matching RunAI's runtime user)
-RUN groupadd -g 1000 appuser && \
-    useradd -u 1000 -g 1000 -m appuser
-
-# Switch to non-root user for all subsequent operations
-USER appuser
-WORKDIR /home/appuser/app
-
-# Configure uv to use system python
-ENV UV_SYSTEM_PYTHON=1
+ENV UV_SYSTEM_PYTHON=1    # tell uv to use /usr python
 ENV UV_PYTHON=python3.11
-ENV PATH="/home/appuser/.local/bin:${PATH}"
 
-# Copy all files needed for installation (as appuser)
-COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
-COPY --chown=appuser:appuser cs336_basics ./cs336_basics
+WORKDIR /workspace        # neutral path; no per-user home dirs
 
-# Install ALL dependencies and the package itself
-# uv sync will install the current package in editable mode automatically
-RUN uv sync --locked
+# -------- dependency layer -------------------------------------------------------
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --system --no-editable   \
+ && chmod -R a+rX /usr/local/lib/python3.11   \
+ && rm -rf ~/.cache/uv                         # keep image slim
 
-# Expose Jupyter port
+# -------- project code -----------------------------------------------------------
+COPY cs336_basics ./cs336_basics
+COPY README.md ./
+
+# Install *non-editable* so no write is needed at runtime
+RUN uv pip install --system . --no-deps
+
+# Everything in /workspace is already readable; tighten perms just in case
+RUN chmod -R a+rX /workspace
+
+# -------- runtime ----------------------------------------------------------------
+ENV PYTHONUNBUFFERED=1
 EXPOSE 8888
-
-# Default: run training (can use uv run safely now)
-CMD ["uv", "run", "python", "-m", "cs336_basics.train"]
+CMD ["python3.11", "-m", "cs336_basics.train"]
