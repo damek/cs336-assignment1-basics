@@ -1,7 +1,5 @@
 # RunAI Interactive Mode Guide
 
-**Another summary opus wrote for me."
-
 ## Launching Interactive Session
 
 ```bash
@@ -27,7 +25,8 @@ runai submit-interactive cs336-dev \
 Everything works exactly as it does locally:
 
 ```bash
-# You'll be in /app with all dependencies installed
+# You'll be in /home/appuser/app with all dependencies installed
+# All commands work with proper permissions now!
 
 # Run training
 uv run python -m cs336_basics.train
@@ -47,32 +46,33 @@ uv run python -c "import torch; print(torch.cuda.is_available())"
 # Run any Python script
 uv run python -m cs336_basics.accounting
 
-# Or use Python directly (since uv has set everything up)
+# Or use Python directly
 python -c "import cs336_basics; print(cs336_basics.__version__)"
 ```
+
+## Why This Works Now
+
+The Docker image is built with UID 1000 (appuser), which matches RunAI's runtime user. This means:
+- All files are owned by the correct user
+- `uv run` can update `.egg-info` as needed
+- Editable installs work properly
+- No more "cannot update time stamp" errors!
 
 ## Running Jupyter Notebooks
 
 To run Jupyter in RunAI interactive mode:
 
 ```bash
-# 1. Install Jupyter (if not in your dependencies)
-uv pip install jupyter notebook
+# Start Jupyter (already installed)
+uv run jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 
-# 2. Start Jupyter with port forwarding
-# Option A: If RunAI supports port forwarding
-jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
-
-# Option B: Using RunAI's port forwarding (check your cluster docs)
+# Or if using port forwarding in RunAI
 runai submit-interactive cs336-jupyter \
   --image ghcr.io/YOUR_USERNAME/cs336-assignment1-basics:latest \
   --gpu 1 \
   --port 8888:8888 \
   --interactive \
   --attach
-
-# Then inside:
-jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 ```
 
 ### Alternative: VS Code Remote
@@ -106,8 +106,8 @@ If you need to access data or save outputs:
 runai submit-interactive cs336-dev \
   --image ghcr.io/YOUR_USERNAME/cs336-assignment1-basics:latest \
   --gpu 1 \
-  --volume /path/on/cluster/data:/app/data \
-  --volume /path/on/cluster/outputs:/app/outputs \
+  --volume /path/on/cluster/data:/home/appuser/app/data \
+  --volume /path/on/cluster/outputs:/home/appuser/app/outputs \
   --interactive \
   --attach
 ```
@@ -152,4 +152,10 @@ uv pip list
 
 # Check CUDA
 nvidia-smi
+
+# Check if modules are importable
+python -c "import cs336_basics; print('Success!')"
+
+# Check current user
+whoami  # Should show 'appuser' or UID 1000
 ``` 

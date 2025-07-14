@@ -12,10 +12,11 @@ This is a minimal, beautiful Docker setup optimized for running training experim
 - **GPU-ready**: Built on NVIDIA CUDA base image with cuDNN
 - **Python 3.11**: Stable ecosystem support, especially for PyTorch
 - **Flexible**: Includes all dependencies (training + jupyter + testing)
+- **RunAI-compatible**: Built with UID 1000 to match RunAI's runtime user
 
 ## Architecture Decisions
-1. **Base image**: `nvidia/cuda:12.4.0-cudnn9-runtime-ubuntu22.04` 
-   - Includes CUDA 12.4 runtime and cuDNN 9 for GPU training
+1. **Base image**: `nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04` 
+   - Includes CUDA 12.6 runtime and cuDNN for GPU training
    - Ubuntu 22.04 for stability
 
 2. **Python version**: Python 3.11 from Ubuntu repos
@@ -27,7 +28,12 @@ This is a minimal, beautiful Docker setup optimized for running training experim
    - No pip needed
    - Fastest possible package management
 
-4. **All dependencies included**:
+4. **Non-root user (UID 1000)**:
+   - Matches RunAI's runtime user to avoid permission issues
+   - All files owned by appuser from the start
+   - Enables editable installs and live code updates
+
+5. **All dependencies included**:
    - Yes, the image is ~400MB larger with dev dependencies
    - But it's simpler and more flexible - one image for all uses
    - You can run training, jupyter, tests, or anything else
@@ -35,7 +41,7 @@ This is a minimal, beautiful Docker setup optimized for running training experim
 ## Dockerfile Breakdown
 ```dockerfile
 # GPU-enabled base
-FROM nvidia/cuda:12.4.0-cudnn9-runtime-ubuntu22.04
+FROM nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04
 
 # Minimal Python install (no build tools)
 RUN apt-get update && \
@@ -45,18 +51,28 @@ RUN apt-get update && \
 # Get uv from official image (no pip needed!)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
+# Create non-root user matching RunAI's UID
+RUN groupadd -g 1000 appuser && \
+    useradd -u 1000 -g 1000 -m appuser
+
+# Switch to non-root user
+USER appuser
+WORKDIR /home/appuser/app
+
 # Configure uv
 ENV UV_SYSTEM_PYTHON=1
 ENV UV_PYTHON=python3.11
 
-WORKDIR /app
-
-# Dependencies first (cached layer)
-COPY pyproject.toml uv.lock ./
+# Dependencies first (cached layer, owned by appuser)
+COPY --chown=appuser:appuser pyproject.toml uv.lock ./
 RUN uv sync --locked
 
 # Source code last (changes most often)
-COPY cs336_basics ./cs336_basics
+COPY --chown=appuser:appuser cs336_basics ./cs336_basics
+COPY --chown=appuser:appuser README.md ./
+
+# Install in editable mode (safe now!)
+RUN uv pip install -e . --no-deps
 
 # Expose Jupyter port (optional)
 EXPOSE 8888
@@ -89,7 +105,7 @@ docker run --gpus all cs336 \
 
 # Run Jupyter
 docker run --gpus all -p 8888:8888 cs336 \
-  jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+  uv run jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 
 # Interactive shell
 docker run --gpus all -it cs336 bash
@@ -98,7 +114,7 @@ docker run --gpus all -it cs336 bash
 docker run --gpus all cs336 uv run pytest
 
 # Mount local data
-docker run --gpus all -v /path/to/data:/app/data cs336
+docker run --gpus all -v /path/to/data:/home/appuser/app/data cs336
 ```
 
 ### GitHub Actions Integration
@@ -121,7 +137,7 @@ runai submit-interactive cs336-jupyter \
   --image ghcr.io/YOUR_GITHUB_USER/cs336-assignment1-basics:latest \
   --gpu 1 \
   --port 8888:8888 \
-  --command -- jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root \
+  --command -- uv run jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root \
   --interactive \
   --attach
 
@@ -138,6 +154,15 @@ runai submit-interactive cs336-dev \
 - **Image size**: ~1.2GB (includes all dependencies)
 - **Dependency install**: ~10s with uv (vs ~2min with pip)
 
+## The UID 1000 Fix Explained
+RunAI runs containers as UID 1000 (not root). Previous versions built everything as root, causing permission errors when RunAI tried to modify files. Now:
+- We create `appuser` with UID 1000 during build
+- All operations happen as this user
+- Files are owned by UID 1000 from the start
+- No permission errors in RunAI!
+
+This is the cleanest solution - better than `chmod` or `chown` hacks.
+
 ## CMD Behavior Explained
 The `CMD` in the Dockerfile is just the **default** command. Think of it as:
 - "If the user doesn't specify what to run, run this"
@@ -147,7 +172,7 @@ The `CMD` in the Dockerfile is just the **default** command. Think of it as:
 Examples:
 - `docker run cs336` → runs the CMD (training)
 - `docker run cs336 bash` → overrides CMD, runs bash
-- `docker run cs336 jupyter notebook ...` → overrides CMD, runs jupyter
+- `docker run cs336 uv run jupyter notebook ...` → overrides CMD, runs jupyter
 
 ## Why Include Everything?
 1. **Simplicity**: One image to rule them all
