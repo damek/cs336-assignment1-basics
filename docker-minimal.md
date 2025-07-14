@@ -14,8 +14,8 @@ This is a minimal, beautiful Docker setup optimized for running training experim
 - **Flexible**: Includes all dependencies (training + jupyter + testing)
 
 ## Architecture Decisions
-1. **Base image**: `nvidia/cuda:12.4.0-cudnn-runtime-ubuntu22.04` 
-   - Includes CUDA runtime and cuDNN for GPU training
+1. **Base image**: `nvidia/cuda:12.4.0-cudnn9-runtime-ubuntu22.04` 
+   - Includes CUDA 12.4 runtime and cuDNN 9 for GPU training
    - Ubuntu 22.04 for stability
 
 2. **Python version**: Python 3.11 from Ubuntu repos
@@ -35,7 +35,7 @@ This is a minimal, beautiful Docker setup optimized for running training experim
 ## Dockerfile Breakdown
 ```dockerfile
 # GPU-enabled base
-FROM nvidia/cuda:12.4.0-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.0-cudnn9-runtime-ubuntu22.04
 
 # Minimal Python install (no build tools)
 RUN apt-get update && \

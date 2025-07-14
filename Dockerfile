@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-FROM nvidia/cuda:12.4.0-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.0-cudnn9-runtime-ubuntu22.04
 
 # Install Python 3.11 (available in Ubuntu 22.04 repos)
 RUN apt-get update && \
