@@ -22,18 +22,13 @@ ENV UV_SYSTEM_PYTHON=1
 ENV UV_PYTHON=python3.11
 ENV PATH="/home/appuser/.local/bin:${PATH}"
 
-# Copy only dependency files (as appuser)
-COPY --chown=appuser:appuser pyproject.toml uv.lock ./
-
-# Install ALL dependencies (including jupyter, pytest, etc.)
-RUN uv sync --locked
-
-# Copy source code (as appuser)
+# Copy all files needed for installation (as appuser)
+COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
 COPY --chown=appuser:appuser cs336_basics ./cs336_basics
-COPY --chown=appuser:appuser README.md ./
 
-# Install package in editable mode (now safe because appuser owns everything)
-RUN uv pip install -e . --no-deps
+# Install ALL dependencies and the package itself
+# uv sync will install the current package in editable mode automatically
+RUN uv sync --locked
 
 # Expose Jupyter port
 EXPOSE 8888
