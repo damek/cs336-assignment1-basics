@@ -30,6 +30,8 @@ RUN uv sync --locked
 
 # Copy source code (as appuser)
 COPY --chown=appuser:appuser cs336_basics ./cs336_basics
+COPY --chown=appuser:appuser README.md ./
+
 # Install package in editable mode (now safe because appuser owns everything)
 RUN uv pip install -e . --no-deps
 

@@ -26,7 +26,6 @@ Thumbs.db
 tests/
 *.ipynb
 *.pdf
-*.md
 .git/
 .github/
 .gitignore
@@ -34,3 +33,7 @@ LICENSE
 checkpoints/
 wandb/
 data/
+# Note: README.md is needed for package installation
+CHANGELOG.md
+docker-minimal.md
+runai-guide.md
