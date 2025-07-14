@@ -7,16 +7,16 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-ENV UV_SYSTEM_PYTHON=1    # tell uv to use /usr python
+ENV UV_SYSTEM_PYTHON=1   
 ENV UV_PYTHON=python3.11
 
-WORKDIR /workspace        # neutral path; no per-user home dirs
+WORKDIR /workspace       
 
 # -------- dependency layer -------------------------------------------------------
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --system --no-editable   \
  && chmod -R a+rX /usr/local/lib/python3.11   \
- && rm -rf ~/.cache/uv                         # keep image slim
+ && rm -rf ~/.cache/uv                         
 
 # -------- project code -----------------------------------------------------------
 COPY cs336_basics ./cs336_basics
