@@ -41,7 +41,7 @@ class TransformerCfg:
     # ─── Runtime / hardware ───────────────────────────────────────────────
     device:          str = "cuda"
     dtype:           str = "float32"      
-    compile:         bool = True          
+    compile:         bool = False          
 
     # ─── Logging & checkpoints ────────────────────────────────────────────
     wandb_project:   str = ""
