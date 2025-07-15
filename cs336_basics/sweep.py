@@ -56,7 +56,7 @@ for lr, bs in itertools.product(args.lr, args.bs):
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
-        ["python", "train.py",
+        ["python3.11", "train.py",
          "--cfg_cls",  cls_flag,
          "--cfg_json", json.dumps(cfg.as_dict())],
         check=True
