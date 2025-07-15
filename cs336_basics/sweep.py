@@ -30,6 +30,7 @@ p.add_argument("--steps", type=int, default=10_000,
 p.add_argument("--device", default="cuda")
 p.add_argument("--print_every", type=int, default=100)
 p.add_argument("--validation_every", type=int, default=500)
+p.add_argument("--weight_decay", type=float, default=1e-2)
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
