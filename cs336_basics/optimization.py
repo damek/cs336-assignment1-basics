@@ -3,6 +3,10 @@ import torch
 from collections.abc import Callable, Iterable
 from typing import Optional
 import math
+import os
+import typing
+
+import torch.optim.optimizer
 
 class AdamW(torch.optim.Optimizer):
 
@@ -61,3 +65,23 @@ def gradient_clipping(params: list[torch.tensor], max_l2_norm, eps = 1e-6):
         norm = param.grad.norm()
         param.grad.mul_(max_l2_norm/(norm + eps))
     
+def save_checkpoint(model : torch.nn.Module, optimizer: torch.optim.Optimizer, iteration : int , out : str | os.PathLike | typing.BinaryIO | typing.IO[bytes], args = None, ema_loss= None, valid_loss=float('inf')):
+    model_state = model.state_dict()
+    optimizer_state = optimizer.state_dict()
+    obj = {'model_state' : model_state, 'optimizer_state' : optimizer_state, 'iteration' : iteration, 'args' : args, 'ema_loss' : ema_loss, 'valid_loss' : valid_loss}
+    torch.save(obj, out)
+
+
+def load_checkpoint(    
+    src: str | os.PathLike | typing.BinaryIO | typing.IO[bytes],
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,):
+
+    obj = torch.load(src, weights_only=False)
+    model.load_state_dict(obj['model_state'])
+    optimizer.load_state_dict(obj['optimizer_state'])
+    iter = obj['iteration']
+    args = obj.get('args', None)
+    ema_loss = obj.get('ema_loss', None)
+    valid_loss = obj.get('valid_loss', float('inf'))
+    return iter, args, ema_loss, valid_loss
