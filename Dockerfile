@@ -5,11 +5,11 @@ FROM nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04
 # 1. System packages  (C tool-chain + git + Python 3.11)
 # ──────────────────────────────────────────────────────────────
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        python3.11 python3.11-venv python3-pip \
-        git ca-certificates \
-        build-essential clang && \
-    rm -rf /var/lib/apt/lists/*
+apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-dev python3-pip \
+    git ca-certificates \
+    build-essential clang && \
+rm -rf /var/lib/apt/lists/*
 
 # simple alias so "python" is always there
 RUN ln -s /usr/bin/python3.11 /usr/local/bin/python
