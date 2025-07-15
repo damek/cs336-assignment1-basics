@@ -22,7 +22,7 @@ ENV UV_PYTHON=python3.11
 WORKDIR /src
 ARG REPO_URL=https://github.com/damek/cs336-assignment1-basics.git
 ARG REPO_REF=main
-RUN git clone --branch "$REPO_REF" --depth 1 "$REPO_URL" repo \ && chmod -R a+rwx /src/repo
+RUN git clone --branch "$REPO_REF" --depth 1 "$REPO_URL" repo && chmod -R a+rwx /src/repo
 
 # ────────────────────────────────────────────────────────────────────────────
 # 3. Install ALL dependencies into a project-local virtual-env
