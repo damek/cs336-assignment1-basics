@@ -14,7 +14,6 @@ RUN apt-get update && \
         cuda-cudart-dev-12-6 \
         cuda-command-line-tools-12-6 \
         cuda-driver-dev-12-6 \
-        libnvjitlink-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CUDA_HOME=/usr/local/cuda-12.6
