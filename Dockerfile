@@ -10,7 +10,16 @@ RUN apt-get update && \
         git ca-certificates \
         build-essential clang llvm \
         cuda-compiler-12-6 \
+        cuda-nvcc-12-6 \
+        cuda-cudart-dev-12-6 \
+        cuda-command-line-tools-12-6 \
+        cuda-driver-dev-12-6 \
+        libnvjitlink-dev \
     && rm -rf /var/lib/apt/lists/*
+
+ENV CUDA_HOME=/usr/local/cuda-12.6
+ENV PATH="$CUDA_HOME/bin:${PATH}"
+ENV LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
 
 # simple alias so "python" is always there
 RUN ln -s /usr/bin/python3.11 /usr/local/bin/python
