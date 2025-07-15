@@ -10,7 +10,8 @@ from typing import Dict, List, Tuple
 from collections.abc import Iterable, Iterator
 from heapq import heappush, heappop
 import numpy as np
-
+import numpy.typing as npt
+import torch
 
 
 def process_chunk(path: str, start: int, end: int, splitter_pattern: re.Pattern, special_tokens: list[str]) -> defaultdict[tuple, int]:
@@ -118,12 +119,12 @@ class BPETrainer:
 
     def _heap_best_pair(self) -> tuple[int, int] | None:
         while self.heap:
-            neg_cnt   = self.heap[0][0]     
-            p0, p1    = self.heap[0][-2:]   #
+            neg_cnt   = self.heap[0][0]     # first field
+            p0, p1    = self.heap[0][-2:]   # last two fields
             real_cnt  = self.pair_counts.get((p0, p1), 0)
             if real_cnt and -neg_cnt == real_cnt:   # fresh
                 return p0, p1
-            heappop(self.heap)                       
+            heappop(self.heap)                       # stale → drop
         return None
 
 
@@ -231,6 +232,7 @@ class Tokenizer:
         self.pretokenization_pattern = re.compile(self.splitter)
         self.inverted_merge = {self.merges[i] : i for i in range(len(self.merges))}
         self.inverted_vocab = {self.vocab[i] : i for i in range(len(self.vocab))}
+        self.eot_id = self.inverted_vocab.get(bytes("<|endoftext|>".encode("utf-8")), None)
         if special_tokens == None: 
             self.special_tokens = {}
             self.special_token_pattern = None
@@ -394,6 +396,7 @@ class DocumentSampler:
                 # Read a large chunk of text from the file
                 chunk = f.read(self.read_chunk_size)
                 
+                # If f.read() returns an empty string, we've reached the end of the file.
                 if not chunk:
                     break
                 
@@ -476,3 +479,19 @@ def find_chunk_boundaries(
     # Make sure all boundaries are unique, but might be fewer than desired_num_chunks
     return sorted(set(chunk_boundaries))
 
+
+## Torch.as_tensor was too slow.
+# def data_from_numpy_old(x: np.ndarray[int], batch_size, context_length, device=None):
+#     X = torch.as_tensor(x, dtype=torch.long)
+#     windows = X.unfold(0, context_length + 1, 1) # just learned this!!!
+#     batch_starts = torch.randint(low=0, high=x.shape[0] - context_length, size=(batch_size, ))
+#     batches = windows.index_select(0, batch_starts)
+#     samples = batches[:, :-1].to(device=device, non_blocking=True)
+#     targets = batches[:, 1:].to(device=device, non_blocking=True)
+#     return samples, targets
+
+def data_from_numpy(x_np, batch_size, context_length, device):
+    idx = np.random.randint(0, x_np.shape[0] - context_length, size=batch_size + 1)
+    batch_np = np.stack([x_np[i : i + context_length + 1] for i in idx])
+    batch = torch.from_numpy(batch_np).to(device, dtype=torch.long, non_blocking=True)
+    return batch[:, :-1], batch[:, 1:]
