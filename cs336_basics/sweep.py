@@ -30,7 +30,7 @@ p.add_argument("--steps", type=int, default=10_000,
 p.add_argument("--device", default="cuda")
 p.add_argument("--print_every", type=int, default=100)
 p.add_argument("--validation_every", type=int, default=500)
-p.add_argument("--weight_decay", type=float, default=1e-2)
+p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
@@ -46,14 +46,15 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # ────────────────────────────────────────────────────────────────
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
-for lr, bs in itertools.product(args.lr, args.bs):
+for lr, bs, weight_decay in itertools.product(args.lr, args.bs, args.weight_decay):
     # build the dataclass 
     cfg = CfgClass(lr=lr,
                    batch_size=bs,
                    num_training_steps=args.steps,
                    print_every=args.print_every,
                    validation_every=args.validation_every,
-                   device=args.device)
+                   device=args.device,
+                   weight_decay=weight_decay)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
