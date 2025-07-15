@@ -14,7 +14,7 @@ WORKDIR /workspace
 
 # -------- dependency layer -------------------------------------------------------
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --system --no-editable   \
+RUN uv sync --locked --no-editable   \
  && chmod -R a+rX /usr/local/lib/python3.11   \
  && rm -rf ~/.cache/uv                         
 
@@ -23,7 +23,7 @@ COPY cs336_basics ./cs336_basics
 COPY README.md ./
 
 # Install *non-editable* so no write is needed at runtime
-RUN uv pip install --system . --no-deps
+RUN uv pip install . --no-deps
 
 # Everything in /workspace is already readable; tighten perms just in case
 RUN chmod -R a+rX /workspace
