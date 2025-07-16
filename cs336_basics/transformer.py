@@ -252,7 +252,7 @@ def decode(prompt : str, model, tokenizer:tokenizer_utils.Tokenizer, max_tokens=
 
 def top_p(distribution, p=None):
     if p == None:
-        return distribution
+        return distribution, len(distribution), torch.arange(len(distribution))
     probs_sorted, indices = torch.sort(distribution, descending=True)
     mass = 0
     count = 0
