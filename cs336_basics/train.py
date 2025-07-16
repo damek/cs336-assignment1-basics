@@ -64,7 +64,7 @@ def main():
     if args.compile and args.device == "cuda":
         backend = "inductor"
         model   = torch.compile(model, backend=backend, mode="default")
-    optimizer = optimization.AdamW(model.parameters(), lr = args.lr, betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     print("Weight decay", args.weight_decay)
     current_iter = 0
     ema_loss = 0
