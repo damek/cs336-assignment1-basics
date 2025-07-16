@@ -70,16 +70,25 @@ def save_checkpoint(model : torch.nn.Module, optimizer: torch.optim.Optimizer, i
     torch.save(obj, out)
 
 
+import transformer
 def load_checkpoint(    
     src: str | os.PathLike | typing.BinaryIO | typing.IO[bytes],
-    model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,):
+    model = None,
+    optimizer = None):
 
-    obj = torch.load(src, weights_only=False)
-    model.load_state_dict(obj['model_state'])
-    optimizer.load_state_dict(obj['optimizer_state'])
     iter = obj['iteration']
     args = obj.get('args', None)
+    obj = torch.load(src, weights_only=False)
+    if model == None and args == None:
+        raise ValueError("Either model or args must be provided")
+    if optimizer == None and args == None:
+        raise ValueError("Either optimizer or args must be provided")
+    if model == None:
+        model = transformer.transformer_lm(vocab_size=args.vocab_size,d_ff=args.d_ff, d_model=args.d_model, num_heads=args.num_heads, num_layers=args.num_layers, context_length=args.context_length, theta=args.rope_theta_parameter, device=args.device, pre_RMS=True, post_RMS=False)
+    if optimizer == None:
+        optimizer = AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    model.load_state_dict(obj['model_state'])
+    optimizer.load_state_dict(obj['optimizer_state'])
     ema_loss = obj.get('ema_loss', None)
     valid_loss = obj.get('valid_loss', float('inf'))
     return iter, args, ema_loss, valid_loss
