@@ -91,4 +91,4 @@ def load_checkpoint(
     optimizer.load_state_dict(obj['optimizer_state'])
     ema_loss = obj.get('ema_loss', None)
     valid_loss = obj.get('valid_loss', float('inf'))
-    return iter, args, ema_loss, valid_loss
+    return model, optimizer, iter, args, ema_loss, valid_loss

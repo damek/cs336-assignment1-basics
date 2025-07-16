@@ -70,7 +70,7 @@ def main():
     ema_loss = 0
     best_validation_loss = float('inf')
     if args.resume_from != None: 
-        current_iter, args_old, ema_loss, best_validation_loss = optimization.load_checkpoint(src=args.resume_from, model=model, optimizer=optimizer)
+        model, optimizer, current_iter, args_old, ema_loss, best_validation_loss = optimization.load_checkpoint(src=args.resume_from, model=model, optimizer=optimizer)
         print(f"Loading from checkpoint: iteration {current_iter}, ema_loss {ema_loss}, best_validation_loss {best_validation_loss}")
         # Test with a tiny subset first
         model.eval()
