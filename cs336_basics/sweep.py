@@ -72,9 +72,12 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
         min_lr = min_lr
         warmup_steps = warmup_steps
         cosine_cycle_iters = cosine_cycle_iters
+        if cosine_cycle_iters is None:
+            cosine_cycle_iters = args.steps
         cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_iters": cosine_cycle_iters}
-        if cosine_cycle_iters is None or warmup_steps + cosine_cycle_iters > args.steps:
+        if warmup_steps + cosine_cycle_iters > args.steps:
             cosine_cycle_iters = args.steps - warmup_steps
+            print(f"Warning: warmup_steps + cosine_cycle_iters > args.steps, setting cosine_cycle_iters to {cosine_cycle_iters}")
     else:
         cosine_decay = None
 
