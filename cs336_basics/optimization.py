@@ -44,8 +44,6 @@ class AdamW(torch.optim.Optimizer):
 
         return loss
 
-            
-
 def learning_rate_schedule(it: int,
     max_learning_rate: float,
     min_learning_rate: float,

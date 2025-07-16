@@ -88,6 +88,8 @@ def main():
     for iter in range(current_iter, args.num_training_steps + current_iter):
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_numpy(train, batch_size=args.batch_size, context_length=args.context_length, device=args.device)
+        if args.lr_scheduler == "cosine":
+            optimizer.lr = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_iters"])
         optimizer.zero_grad()
         loss = transformer.cross_entropy(model.forward(data), targets)
         loss.backward()

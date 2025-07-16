@@ -34,8 +34,7 @@ class TransformerCfg:
     lr:              float = 1e-4
     betas:           Tuple[float, float] = (0.9, 0.95)
     weight_decay:    float = 1e-2
-    # warmup_steps:    int   = 400
-    # cosine_decay:    bool  = True          # disable for constant LR
+    cosine_decay:    dict[str,float] = None # max_lr, min_lr, warmup_steps, cosine_cycle_iters
     # grad_clip:       Optional[float] = 1.0 # None → no clipping
 
     # ─── Runtime / hardware ───────────────────────────────────────────────
@@ -64,6 +63,7 @@ class TSCfg(TransformerCfg):
     wandb_project:   str = "TinyStories"
     wandb_base_name: str = "{group} lr{lr} bs{batch_size} wd{weight_decay} d_model{d_model} context_length{context_length} d_ff{d_ff}"
     checkpoint_dir:  str = "TinyStories_runs/"
+
 
 @dataclass 
 class TSRemovePostRMSNorm(TSCfg):

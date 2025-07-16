@@ -22,8 +22,20 @@ import math
 p = argparse.ArgumentParser()
 p.add_argument("--cfg_cls",  default="TSPreNormRMS",
                help="Either <ClassName> (assumed in configs.py) or <module:ClassName>")
-p.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
-               help="One or more learning-rates")
+p.add_argument("--lr_scheduler", type=str, choices=["constant", "cosine"], default="constant")
+constant = p.add_argument_group("constant")
+constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
+               help="[constant] one or more learning-rates")
+cosine = p.add_argument_group("cosine")
+cosine.add_argument("--max_lr", type=float, nargs="+", default=[1e-1],
+               help="[cosine] Maximum learning rate")
+cosine.add_argument("--min_lr", type=float, nargs="+", default=[1e-6],
+               help="[cosine] Minimum learning rate")
+cosine.add_argument("--warmup_steps", type=int, nargs="+", default=[400],
+               help="[cosine] Number of warmup steps")
+cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=[10000],
+               help="[cosine] Number of iterations in the cosine cycle")
+
 p.add_argument("--bs",  type=int,   nargs="+", default=[16],
                help="One or more batch-sizes")
 p.add_argument("--steps", type=int, default=10_000,
@@ -51,8 +63,21 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # ────────────────────────────────────────────────────────────────
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
-for lr, bs, weight_decay, d_model, context_length in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length):
+
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_iters in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_iters):
     # build the dataclass 
+    if args.lr_scheduler == "cosine":
+        lr = None
+        max_lr = max_lr
+        min_lr = min_lr
+        warmup_steps = warmup_steps
+        cosine_cycle_iters = cosine_cycle_iters
+        cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_iters": cosine_cycle_iters}
+        if warmup_steps + cosine_cycle_iters > args.steps:
+            raise ValueError(f"Warning: warmup_steps + cosine_cycle_iters > args.steps, skipping this run")
+    else:
+        cosine_decay = None
+
     cfg = CfgClass(lr=lr,
                    batch_size=bs,
                    num_training_steps=args.steps,
@@ -62,7 +87,8 @@ for lr, bs, weight_decay, d_model, context_length in itertools.product(args.lr, 
                    weight_decay=weight_decay,
                    d_model=d_model,
                    context_length=context_length,
-                   resume_from=args.resume_from)
+                   resume_from=args.resume_from,
+                   cosine_decay=cosine_decay)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
