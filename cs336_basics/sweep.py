@@ -27,13 +27,13 @@ constant = p.add_argument_group("constant")
 constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
                help="[constant] one or more learning-rates")
 cosine = p.add_argument_group("cosine")
-cosine.add_argument("--max_lr", type=float, nargs="+", default=[1e-1],
+cosine.add_argument("--max_lr", type=float, nargs="+", default=None,
                help="[cosine] Maximum learning rate")
-cosine.add_argument("--min_lr", type=float, nargs="+", default=[1e-6],
+cosine.add_argument("--min_lr", type=float, nargs="+", default=None,
                help="[cosine] Minimum learning rate")
-cosine.add_argument("--warmup_steps", type=int, nargs="+", default=[400],
+cosine.add_argument("--warmup_steps", type=int, nargs="+", default=None,
                help="[cosine] Number of warmup steps")
-cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=[10000],
+cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=None,
                help="[cosine] Number of iterations in the cosine cycle")
 
 p.add_argument("--bs",  type=int,   nargs="+", default=[16],
@@ -73,8 +73,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
         warmup_steps = warmup_steps
         cosine_cycle_iters = cosine_cycle_iters
         cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_iters": cosine_cycle_iters}
-        if warmup_steps + cosine_cycle_iters > args.steps:
-            raise ValueError(f"Warning: warmup_steps + cosine_cycle_iters > args.steps, skipping this run")
+        if cosine_cycle_iters is None or warmup_steps + cosine_cycle_iters > args.steps:
+            cosine_cycle_iters = args.steps - warmup_steps
     else:
         cosine_decay = None
 
