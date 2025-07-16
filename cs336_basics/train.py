@@ -10,7 +10,6 @@ import configs
 @torch.no_grad
 def eval(windowed_validation : torch.Tensor, model, args):
     model.eval()
-    valid_size = args.valid_size
     num_windows = windowed_validation.shape[0]
     nb_batches = math.ceil(num_windows / args.batch_size)
     loss = 0
