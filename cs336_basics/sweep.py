@@ -35,7 +35,7 @@ p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
-p.add_argument("--resume_from", type=str, default=[None])
+p.add_argument("--resume_from", type=str, default=None)
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
