@@ -88,7 +88,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    d_model=d_model,
                    context_length=context_length,
                    resume_from=args.resume_from,
-                   cosine_decay=cosine_decay)
+                   cosine_decay=cosine_decay,
+                   lr_scheduler=args.lr_scheduler)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
