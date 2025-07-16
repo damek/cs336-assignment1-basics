@@ -1,6 +1,6 @@
 import torch
 import configs, tokenizer_utils, transformer, optimization
-import argparse
+import argparse, pathlib
 
 # Get command line arguments from user 
 ## Checkpoint location 
@@ -22,8 +22,7 @@ p.add_argument("--num_tokens_per_sample", type=int, default=1)
 args = p.parse_args()
 
 ## Load model
-print(args.checkpoint)
-model, _ = optimization.load_checkpoint(args.checkpoint, model=None, optimizer=None)
+model, _ = optimization.load_checkpoint(pathlib.Path(args.checkpoint), model=None, optimizer=None)
 
 ## Load tokenizer
 tokenizer = tokenizer_utils.Tokenizer.from_files(args.vocab_path, args.merges_path)
