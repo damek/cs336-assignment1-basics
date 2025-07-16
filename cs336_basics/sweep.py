@@ -35,6 +35,7 @@ p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
+p.add_argument("--resume_from", type=str, default=[None])
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
@@ -60,7 +61,8 @@ for lr, bs, weight_decay, d_model, context_length in itertools.product(args.lr, 
                    device=args.device,
                    weight_decay=weight_decay,
                    d_model=d_model,
-                   context_length=context_length)
+                   context_length=context_length,
+                   resume_from=args.resume_from)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
