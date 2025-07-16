@@ -14,6 +14,7 @@ python sweep.py --cfg_cls configs:TSRemoveRope --lr 5e-5 --bs 32
 
 import argparse, importlib, itertools, json, subprocess, uuid
 from pathlib import Path
+import math
 
 # ────────────────────────────────────────────────────────────────
 # 1. Parse sweep-level CLI flags
@@ -33,6 +34,7 @@ p.add_argument("--validation_every", type=int, default=500)
 p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
+p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
