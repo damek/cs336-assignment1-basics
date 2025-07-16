@@ -23,7 +23,7 @@ args = p.parse_args()
 
 ## Load model
 model = None
-model, _ = optimization.load_checkpoint(args.checkpoint, model=None, optimizer=None)
+optimization.load_checkpoint(args.checkpoint, model=model, optimizer=None)
 
 ## Load tokenizer
 tokenizer = tokenizer_utils.Tokenizer.from_files(args.vocab_path, args.merges_path)
