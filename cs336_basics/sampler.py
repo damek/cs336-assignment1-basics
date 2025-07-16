@@ -28,11 +28,9 @@ model, _, _, _, _, _ = optimization.load_checkpoint(args.checkpoint, model=None,
 tokenizer = tokenizer_utils.Tokenizer.from_files(args.vocab_path, args.merges_path)
 
 ## Sample from the model 
-sampled_text = transformer.decode(args.prompt, model, tokenizer, args.num_tokens, args.temperature, args.top_p)
-print(sampled_text)
 
 for i in range(args.num_tokens_per_sample):
-    sampled_text = transformer.decode(args.prompt, model, tokenizer, args.num_tokens, args.temperature, args.top_p)
+    sampled_text = transformer.decode(prompt=args.prompt, model=model, tokenizer=tokenizer, num_tokens=args.num_tokens, temperature=args.temperature, top_p=args.top_p)
     print(sampled_text)
     print("-"*100)
 
