@@ -30,7 +30,7 @@ tokenizer = tokenizer_utils.Tokenizer.from_files(args.vocab_path, args.merges_pa
 ## Sample from the model 
 
 for i in range(args.num_tokens_per_sample):
-    sampled_text = transformer.decode(prompt=args.prompt, model=model, tokenizer=tokenizer, max_tokens=args.max_tokens, temperature=args.temperature, p=args.p)
+    sampled_text = transformer.decode(prompt=args.prompt, model=model, tokenizer=tokenizer, max_tokens=args.max_tokens, temperature=args.temperature, p=args.p, device=args.device)
     print(sampled_text)
     print("-"*100)
 

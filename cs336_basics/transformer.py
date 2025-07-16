@@ -233,8 +233,8 @@ def cross_entropy(logits: torch.tensor, targets):
     return -diff
 
 import tokenizer_utils
-def decode(prompt : str, model, tokenizer:tokenizer_utils.Tokenizer, max_tokens=1, temperature=1, p=None):
-    token_list = tokenizer.encode(prompt)
+def decode(prompt : str, model, tokenizer:tokenizer_utils.Tokenizer, max_tokens=1, temperature=1, p=None, device=None):
+    token_list = tokenizer.encode(prompt).to(device)
     eot_id = tokenizer.eot_id
     token_count = 0
     next_token = token_list[-1]
