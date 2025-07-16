@@ -76,7 +76,10 @@ def main():
         model.eval()
     if ema_loss == None:
         ema_loss = 0
-    optimizer.lr = args.lr
+    if args.lr_scheduler == "cosine":
+        optimizer.lr = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_iters"])
+    else: 
+        optimizer.lr = args.lr
 
     if args.validation_every == None: 
         args.validation_every = 100
