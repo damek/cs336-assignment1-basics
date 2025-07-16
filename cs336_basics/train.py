@@ -77,6 +77,7 @@ def main():
     if ema_loss == None:
         ema_loss = 0
     if args.lr_scheduler == "cosine":
+        print("Using cosine learning rate scheduler")
         optimizer.lr = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_iters"])
     else: 
         optimizer.lr = args.lr
