@@ -9,20 +9,28 @@ import configs
 
 @torch.no_grad
 def eval(windowed_validation : torch.Tensor, model, args):
+    model.eval()
     valid_size = args.valid_size
-    nb_batches = math.ceil(valid_size //(args.batch_size* args.context_length))
+    num_windows = windowed_validation.shape[0]
+    nb_batches = math.ceil(num_windows / args.batch_size)
     loss = 0
+    total_tokens = 0
     for i in range(nb_batches):
         # make sure to multiply loss by batch size*context_length
-        end_window = min((i+1)*args.batch_size, valid_size)
-        chunk_size = end_window - i*args.batch_size # could be smaller than batch_size
         start_window = args.batch_size*i
-        data = windowed_validation[ start_window:end_window, :-1].to(args.device)
-        targets = windowed_validation[ start_window:end_window, 1:].to(args.device)
-        loss_batch = args.context_length*chunk_size*transformer.cross_entropy(model.forward(data), targets)
-        loss += loss_batch/valid_size    
+        end_window = min((i+1)*args.batch_size, num_windows)
+        chunk_size = end_window - start_window # could be smaller than batch_size
+        batched_windows = windowed_validation[start_window:end_window]
+        data = batched_windows[:, :-1].to(args.device)
+        targets = batched_windows[:, 1:].to(args.device)
+        logits = model.forward(data)
+        loss_batch = transformer.cross_entropy(logits, targets)
+        num_tokens_in_batch = args.context_length*chunk_size
+        loss += loss_batch*num_tokens_in_batch    
+        total_tokens += num_tokens_in_batch
 
-    return loss
+    model.train()
+    return loss/total_tokens
 
 def main():
     cfg, _ = configs.load_cfg() 
