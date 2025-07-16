@@ -27,13 +27,13 @@ constant = p.add_argument_group("constant")
 constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
                help="[constant] one or more learning-rates")
 cosine = p.add_argument_group("cosine")
-cosine.add_argument("--max_lr", type=float, nargs="+", default=None,
+cosine.add_argument("--max_lr", type=float, nargs="+", default=[None],
                help="[cosine] Maximum learning rate")
-cosine.add_argument("--min_lr", type=float, nargs="+", default=None,
+cosine.add_argument("--min_lr", type=float, nargs="+", default=[None],
                help="[cosine] Minimum learning rate")
-cosine.add_argument("--warmup_steps", type=int, nargs="+", default=None,
+cosine.add_argument("--warmup_steps", type=int, nargs="+", default=[None],
                help="[cosine] Number of warmup steps")
-cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=None,
+cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=[None],
                help="[cosine] Number of iterations in the cosine cycle")
 
 p.add_argument("--bs",  type=int,   nargs="+", default=[16],
