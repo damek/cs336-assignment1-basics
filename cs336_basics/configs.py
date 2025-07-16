@@ -31,6 +31,7 @@ class TransformerCfg:
     seed:               int = 1337
 
     # ─── Optimiser & schedule ─────────────────────────────────────────────
+    lr_scheduler:    str = "constant"
     lr:              float = 1e-4
     betas:           Tuple[float, float] = (0.9, 0.95)
     weight_decay:    float = 1e-2
