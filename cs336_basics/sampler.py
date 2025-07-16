@@ -22,6 +22,7 @@ p.add_argument("--num_tokens_per_sample", type=int, default=1)
 args = p.parse_args()
 
 ## Load model
+print(args.checkpoint)
 model, _ = optimization.load_checkpoint(args.checkpoint, model=None, optimizer=None)
 
 ## Load tokenizer
