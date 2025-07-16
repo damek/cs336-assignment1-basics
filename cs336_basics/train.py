@@ -72,6 +72,20 @@ def main():
     if args.resume_from != None: 
         current_iter, args_old, ema_loss, best_validation_loss = optimization.load_checkpoint(src=args.resume_from, model=model, optimizer=optimizer)
         print(f"Loading from checkpoint: iteration {current_iter}, ema_loss {ema_loss}, best_validation_loss {best_validation_loss}")
+        # Test with a tiny subset first
+        model.eval()
+        tiny_val = windowed_validation[:4]  # Just 4 windows
+        tiny_loss = eval(tiny_val, model, args)
+        print(f"Tiny validation loss: {tiny_loss}")
+
+        # Test the exact same subset twice
+        tiny_loss2 = eval(tiny_val, model, args)
+        print(f"Tiny validation loss (2nd time): {tiny_loss2}")
+        print(f"Are they identical? {tiny_loss == tiny_loss2}")
+
+        # Now test full validation
+        full_val_loss = eval(windowed_validation, model, args)
+        print(f"Full validation loss: {full_val_loss}")
     if ema_loss == None:
         ema_loss = 0
     optimizer.lr = args.lr
