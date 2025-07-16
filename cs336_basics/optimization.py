@@ -76,9 +76,9 @@ def load_checkpoint(
     model = None,
     optimizer = None):
 
+    obj = torch.load(src, weights_only=False)
     iter = obj['iteration']
     args = obj.get('args', None)
-    obj = torch.load(src, weights_only=False)
     if model == None and args == None:
         raise ValueError("Either model or args must be provided")
     if optimizer == None and args == None:
