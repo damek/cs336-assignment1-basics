@@ -213,9 +213,8 @@ class transformer_lm(nn.Module):
         X = self.Embedding.forward(X)
         for layer in self.layers:
             X = layer(X)
-        if self.pre_RMS:
+        if self.pre_RMS or self.post_RMS:
             X = self.final_RMSNorm.forward(X)
-        # X = self.final_RMSNorm.forward(X)
         X = self.output_layer(X)
         return X
         # return softmax(X, dim=0) model does not include softmax.
