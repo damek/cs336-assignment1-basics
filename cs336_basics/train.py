@@ -105,7 +105,7 @@ def main():
         time_end = time.perf_counter()  
         time_total += time_end - time_start
         if iter % args.print_every == 0:
-            print(f"Iteration: {iter}, ema loss {ema_loss}")
+            print(f"Iteration: {iter}, ema loss {ema_loss}, lr {optimizer.param_groups[0]['lr']}")
             wandb.log({
                 "EMA train loss": ema_loss,
                 "wall_time"      : time_total,       
