@@ -46,6 +46,9 @@ class AdamW(torch.optim.Optimizer):
                 state['m'] = m
                 state['v'] = v
                 state['t'] = t + 1
+                print("norms of states", "m", m.norm(), "v", v.norm(), "lr", lr)
+                print("norms of grad", "grad", grad.norm())
+                print("norms of p", "p", p.norm())
 
         return loss
 
