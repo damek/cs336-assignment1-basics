@@ -65,7 +65,7 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
 
-for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_iters, grad_clip in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_iters, args.grad_clip):
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip):
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
@@ -79,7 +79,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
             warmup_steps = 0
         if cosine_cycle_final_iter > args.run_until_step:
             cosine_cycle_final_iter = args.run_until_step  
-            print(f"Cosine_cycle_final_iter > args.run_until_step, setting cosine_cycle_final_iter to {cosine_cycle_final_iter}")
+            print(f"osine_cycle_final_iter > args.run_until_step, setting cosine_cycle_final_iter to {cosine_cycle_final_iter}")
         cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_final_iter": cosine_cycle_final_iter}
     else:
         cosine_decay = None
