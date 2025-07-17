@@ -111,7 +111,7 @@ def main():
             }, step=iter)
 
 
-        if (iter+1) % args.validation_every == 0 or iter == args.num_training_steps + current_iter - 1:  
+        if (iter+1) % args.validation_every == 0 or iter == args.run_until_step - 1:  
             print("Validating")
             valid_loss = eval(windowed_validation, model, args)
             wandb.log({
@@ -127,7 +127,7 @@ def main():
             optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = valid_loss)
 
         
-        if args.save_freq != None and (iter) % args.save_freq == 0 or iter == args.num_training_steps + current_iter - 1: 
+        if args.save_freq != None and (iter) % args.save_freq == 0 or iter == args.run_until_step - 1: 
             ckpt_path = pathlib.Path(f"{args.checkpoint_path}ckpt_latest.pt")
             ckpt_path.parent.mkdir(parents=True, exist_ok=True)   
             optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = best_validation_loss)
