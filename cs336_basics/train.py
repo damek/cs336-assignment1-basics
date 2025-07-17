@@ -98,9 +98,6 @@ def main():
         loss = transformer.cross_entropy(model.forward(data), targets)
         loss.backward()
         if args.grad_clip is not None:
-            for name, p in model.named_parameters():
-                if p.grad is None:
-                    print(f"{name:30}  NO GRAD (frozen? unused?)")
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
         optimizer.step()
         ema_loss = (1-lambda_ema) * loss.detach() + lambda_ema*ema_loss
