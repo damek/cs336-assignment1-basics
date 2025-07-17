@@ -72,7 +72,7 @@ class TSRemovePreRMSNorm(TSCfg):
     pre_RMS: bool = False
 
 @dataclass 
-class TSPostNormRMS(TSCfg):
+class TSPostRMSNorm(TSCfg):
     post_RMS: bool = True
     pre_RMS: bool = False
 
