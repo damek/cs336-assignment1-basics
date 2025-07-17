@@ -234,12 +234,12 @@ def cross_entropy(logits: torch.tensor, targets):
 
 import tokenizer_utils
 def decode(prompt : str, model, tokenizer:tokenizer_utils.Tokenizer, max_tokens=1, temperature=1, p=None, device=None):
-    token_list = tokenizer.encode(prompt).to(device)
+    token_list = tokenizer.encode(prompt)
     eot_id = tokenizer.eot_id
     token_count = 0
     next_token = token_list[-1]
     while next_token != eot_id and token_count < max_tokens:
-        tensor_view = torch.as_tensor(token_list).reshape((1, len(token_list)))
+        tensor_view = torch.as_tensor(token_list).reshape((1, len(token_list))).to(device)
         next_token_distribution = softmax(model(tensor_view).squeeze()/temperature, dim=0)
         probs_sorted, count, indices = top_p(next_token_distribution[-1,:], p)
         next_id_idx = torch.multinomial(input=probs_sorted[:count], num_samples=1)
