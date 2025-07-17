@@ -27,7 +27,7 @@ class TransformerCfg:
 
     # ─── Training loop ────────────────────────────────────────────────────
     batch_size:         int = 32
-    num_training_steps: int = 10_000
+    run_until_step:     int = 10_000
     validation_every:    int = 500
     print_every:         int = 100
     seed:               int = 1337
