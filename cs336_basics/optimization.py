@@ -60,6 +60,7 @@ def learning_rate_schedule(it: int,
 
 def gradient_clipping(params: list[torch.tensor], max_l2_norm, eps = 1e-6):
     for param in params:
+        print("type of param", type(param), "type of grad", type(param.grad), "type of max_l2_norm", type(max_l2_norm))
         norm = param.grad.norm()
         param.grad.mul_(max_l2_norm/(norm + eps))
     
