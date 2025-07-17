@@ -38,7 +38,7 @@ class TransformerCfg:
     betas:           Tuple[float, float] = (0.9, 0.95)
     weight_decay:    float = 1e-2
     cosine_decay:    dict[str,float] = None # max_lr, min_lr, warmup_steps, cosine_cycle_iters
-    # grad_clip:       Optional[float] = 1.0 # None → no clipping
+    grad_clip:       Optional[float] = None 
 
     # ─── Runtime / hardware ───────────────────────────────────────────────
     device:          str = "cuda"
@@ -73,6 +73,7 @@ class TSCfg(TransformerCfg):
 class TSRemovePreRMS(TSCfg):
     pre_RMS: bool = False
     post_RMS: bool = False
+    # grad_clip: float = 1.0
 
 @dataclass 
 class TSPostRMS(TSCfg):

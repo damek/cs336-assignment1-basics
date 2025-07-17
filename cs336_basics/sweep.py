@@ -36,6 +36,7 @@ cosine.add_argument("--warmup_steps", type=int, nargs="+", default=[0],
 cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=[None],
                help="[cosine] Number of iterations in the cosine cycle")
 
+p.add_argument("--grad_clip", type=float, nargs="+", default=[None])
 p.add_argument("--bs",  type=int,   nargs="+", default=[16],
                help="One or more batch-sizes")
 p.add_argument("--steps", type=int, default=10_000,
@@ -64,7 +65,7 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
 
-for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_iters in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_iters):
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_iters, grad_clip in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_iters, args.grad_clip):
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
@@ -94,7 +95,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    context_length=context_length,
                    resume_from=args.resume_from,
                    cosine_decay=cosine_decay,
-                   lr_scheduler=args.lr_scheduler)
+                   lr_scheduler=args.lr_scheduler,
+                   grad_clip=grad_clip)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
