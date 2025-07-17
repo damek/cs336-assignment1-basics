@@ -47,11 +47,6 @@ class AdamW(torch.optim.Optimizer):
                 state['v'] = v
                 state['t'] = t + 1
 
-                print("norms of states", "m", m.norm(), "v", v.norm())
-                print("norms of grad", "grad", grad.norm())
-                print("norms of p", "p", p.norm())
-                print("lr", lr)
-
         return loss
 
 def learning_rate_schedule(it: int,
