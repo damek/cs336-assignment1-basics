@@ -68,13 +68,13 @@ class TSCfg(TransformerCfg):
 
 
 @dataclass 
-class TSRemovePostRMSNorm(TSCfg):
-    post_RMS: bool = False
+class TSRemovePreRMSNorm(TSCfg):
+    pre_RMS: bool = False
 
 @dataclass 
-class TSPreNormRMS(TSCfg):
-    pre_RMS: bool = True
-    post_RMS: bool = False
+class TSPostNormRMS(TSCfg):
+    post_RMS: bool = True
+    pre_RMS: bool = False
 
 @dataclass 
 class TSRemoveRope(TSCfg):
