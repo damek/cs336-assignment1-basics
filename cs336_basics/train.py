@@ -100,7 +100,6 @@ def main():
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
         optimizer.step()
-        print("learning rate", optimizer.lr)
         ema_loss = (1-lambda_ema) * loss.detach() + lambda_ema*ema_loss
         time_end = time.perf_counter()  
         time_total += time_end - time_start
