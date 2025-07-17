@@ -22,6 +22,8 @@ class TransformerCfg:
     rope_theta_parameter:   float = 10000
     eps:                 float = 1e-6
     activation:          str = ""
+    pre_RMS:             bool = True
+    post_RMS:            bool = False
 
     # ─── Training loop ────────────────────────────────────────────────────
     batch_size:         int = 32
@@ -68,11 +70,12 @@ class TSCfg(TransformerCfg):
 
 
 @dataclass 
-class TSRemovePreRMSNorm(TSCfg):
+class TSRemovePreRMS(TSCfg):
     pre_RMS: bool = False
+    post_RMS: bool = False
 
 @dataclass 
-class TSPostRMSNorm(TSCfg):
+class TSPostRMS(TSCfg):
     post_RMS: bool = True
     pre_RMS: bool = False
 
