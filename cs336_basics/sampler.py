@@ -18,7 +18,7 @@ p.add_argument("--p", type=float, default=None)
 p.add_argument("--vocab_path", type=str, required=True)
 p.add_argument("--merges_path", type=str, required=True)
 p.add_argument("--device", type=str, default="cuda")
-p.add_argument("--num_tokens_per_sample", type=int, default=1)
+p.add_argument("--num_samples", type=int, default=1)
 args = p.parse_args()
 
 ## Load model
@@ -29,7 +29,7 @@ tokenizer = tokenizer_utils.Tokenizer.from_files(args.vocab_path, args.merges_pa
 
 ## Sample from the model 
 
-for i in range(args.num_tokens_per_sample):
+for i in range(args.num_samples):
     sampled_text = transformer.decode(prompt=args.prompt, model=model, tokenizer=tokenizer, max_tokens=args.max_tokens, temperature=args.temperature, p=args.p, device=args.device)
     print(sampled_text)
     print("-"*100)
