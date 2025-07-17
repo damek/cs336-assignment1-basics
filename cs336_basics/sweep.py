@@ -33,13 +33,13 @@ cosine.add_argument("--min_lr", type=float, nargs="+", default=[1e-6],
                help="[cosine] Minimum learning rate")
 cosine.add_argument("--warmup_steps", type=int, nargs="+", default=[0],
                help="[cosine] Number of warmup steps")
-cosine.add_argument("--cosine_cycle_iters", type=int, nargs="+", default=[None],
-               help="[cosine] Number of iterations in the cosine cycle")
+cosine.add_argument("--cosine_cycle_final_iter", type=int, nargs="+", default=[None],
+               help="[cosine] Final iteration of the cosine cycle")
 
 p.add_argument("--grad_clip", type=float, nargs="+", default=[None])
 p.add_argument("--bs",  type=int,   nargs="+", default=[16],
                help="One or more batch-sizes")
-p.add_argument("--steps", type=int, default=10_000,
+p.add_argument("--run_until_step", type=int, default=10_000,
                help="num_training_steps override")
 p.add_argument("--device", default="cuda")
 p.add_argument("--print_every", type=int, default=100)
@@ -69,18 +69,18 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
-        max_lr = max_lr
-        min_lr = min_lr
-        warmup_steps = warmup_steps
-        cosine_cycle_iters = cosine_cycle_iters
-        if cosine_cycle_iters is None:
-            cosine_cycle_iters = args.steps - warmup_steps
+        # max_lr = max_lr
+        # min_lr = min_lr
+        # warmup_steps = warmup_steps
+        # cosine_cycle_iters = cosine_cycle_iters
+        if cosine_cycle_final_iter is None:
+            cosine_cycle_final_iter = args.run_until_step
         if warmup_steps is None:
             warmup_steps = 0
-        if warmup_steps + cosine_cycle_iters > args.steps:
-            cosine_cycle_iters = args.steps - warmup_steps
-            print(f"Warning: warmup_steps + cosine_cycle_iters > args.steps, setting cosine_cycle_iters to {cosine_cycle_iters}")
-        cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_iters": cosine_cycle_iters}
+        if cosine_cycle_final_iter > args.run_until_step:
+            cosine_cycle_final_iter = args.run_until_step  
+            print(f"Cosine_cycle_final_iter > args.run_until_step, setting cosine_cycle_final_iter to {cosine_cycle_final_iter}")
+        cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_final_iter": cosine_cycle_final_iter}
     else:
         cosine_decay = None
 

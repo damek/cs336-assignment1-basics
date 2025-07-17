@@ -78,7 +78,7 @@ def main():
         ema_loss = 0
     if args.lr_scheduler == "cosine":
         print("Using cosine learning rate scheduler")
-        optimizer.lr = optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_iters"])
+        optimizer.lr = optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
     else: 
         optimizer.lr = args.lr
 
@@ -89,11 +89,11 @@ def main():
     wandb.watch(model, log="all", log_freq=100)
     time_total = 0
     print("print_every", args.print_every)
-    for iter in range(current_iter, args.num_training_steps + current_iter):
+    for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_numpy(train, batch_size=args.batch_size, context_length=args.context_length, device=args.device)
         if args.lr_scheduler == "cosine":
-            optimizer.lr = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_iters"])
+            optimizer.lr = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
         optimizer.zero_grad()
         loss = transformer.cross_entropy(model.forward(data), targets)
         loss.backward()

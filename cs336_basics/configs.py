@@ -37,7 +37,7 @@ class TransformerCfg:
     lr:              float = 1e-4
     betas:           Tuple[float, float] = (0.9, 0.95)
     weight_decay:    float = 1e-2
-    cosine_decay:    dict[str,float] = None # max_lr, min_lr, warmup_steps, cosine_cycle_iters
+    cosine_decay:    dict[str,float] = None # max_lr, min_lr, warmup_steps, cosine_cycle_final_iter
     grad_clip:       Optional[float] = None 
 
     # ─── Runtime / hardware ───────────────────────────────────────────────
