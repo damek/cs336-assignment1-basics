@@ -15,6 +15,11 @@ class AdamW(torch.optim.Optimizer):
             raise ValueError(f"Invalid, negatove hyperparam") 
         defaults = {'lr' : lr, 'betas' : betas, 'eps' : eps, 'lambda_wd' : weight_decay}
         super().__init__(params,defaults)
+        
+    def set_lr(self, lr):
+        """Update learning rate for all parameter groups"""
+        for group in self.param_groups:
+            group['lr'] = lr
 
     def step(self, closure: Optional[Callable] = None):
         loss = None if closure is None else closure()

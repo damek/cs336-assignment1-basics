@@ -78,10 +78,10 @@ def main():
         ema_loss = 0
     if args.lr_scheduler == "cosine":
         print("Using cosine learning rate scheduler")
-        optimizer.lr = optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
+        optimizer.set_lr(optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
     else: 
-        print("Using constant learning rate scheduler")
-        optimizer.lr = args.lr
+        print("Using constant learning rate scheduler:lr", args.lr)
+        optimizer.set_lr(args.lr)
 
     if args.validation_every == None: 
         args.validation_every = 100
@@ -95,7 +95,7 @@ def main():
         data, targets = tokenizer_utils.data_from_numpy(train, batch_size=args.batch_size, context_length=args.context_length, device=args.device)
         if args.lr_scheduler == "cosine":
             print("Using cosine learning rate scheduler")
-            optimizer.lr = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
+            optimizer.set_lr(optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
         optimizer.zero_grad()
         loss = transformer.cross_entropy(model.forward(data), targets)
         loss.backward()
