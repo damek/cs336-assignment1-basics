@@ -240,7 +240,7 @@ def decode(prompt : str, model, tokenizer:tokenizer_utils.Tokenizer, max_tokens=
     next_token = token_list[-1]
     while next_token != eot_id and token_count < max_tokens:
         tensor_view = torch.as_tensor(token_list).reshape((1, len(token_list))).to(device)
-        next_token_distribution = softmax(model(tensor_view).squeeze()/temperature, dim=0)
+        next_token_distribution = softmax(model(tensor_view).squeeze()/temperature, dim=0, device = device)
         probs_sorted, count, indices = top_p(next_token_distribution[-1,:], p)
         next_id_idx = torch.multinomial(input=probs_sorted[:count], num_samples=1)
         next_id = indices[next_id_idx]
