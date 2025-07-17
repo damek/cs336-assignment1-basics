@@ -51,7 +51,7 @@ class TransformerCfg:
     save_freq:      int = 1000           
     keep_latest:     bool = True
     resume_from:     str = None
-    wandb_base_name: str = "{group} lr{lr} bs{batch_size} wd{weight_decay} d_model{d_model} context_length{context_length} d_ff{d_ff} lr_scheduler{lr_scheduler}"
+    wandb_base_name: str = "{group} lr{lr} bs{batch_size} wd{weight_decay} d_model{d_model} context_length{context_length} d_ff{d_ff} lr_scheduler{lr_scheduler} pre_RMS{pre_RMS} post_RMS{post_RMS} grad_clip{grad_clip}"
                
     def as_dict(self):
         return asdict(self)
