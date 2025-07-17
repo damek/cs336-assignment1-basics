@@ -86,7 +86,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
 
     cfg = CfgClass(lr=lr,
                    batch_size=bs,
-                   num_training_steps=args.steps,
+                   num_training_steps=args.run_until_step,
                    print_every=args.print_every,
                    validation_every=args.validation_every,
                    device=args.device,
