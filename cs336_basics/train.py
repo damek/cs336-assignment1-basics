@@ -136,9 +136,9 @@ def main():
             ckpt_path.parent.mkdir(parents=True, exist_ok=True)   
             optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = best_validation_loss)
 
-        ckpt_path = pathlib.Path(f"{args.checkpoint_path}ckpt_latest.pt")
-        ckpt_path.parent.mkdir(parents=True, exist_ok=True)   
-        optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss)
+    ckpt_path = pathlib.Path(f"{args.checkpoint_path}ckpt_latest.pt")
+    ckpt_path.parent.mkdir(parents=True, exist_ok=True)   
+    optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss)
 
     return model, optimizer, args
                 
