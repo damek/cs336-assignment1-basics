@@ -48,7 +48,9 @@ def main():
     run = wandb.init(project=args.wandb_project, group=group, name=timestamped_name, config=args)
     print("Training with args", args)
     train = np.memmap(args.train_data,dtype=np.uint16,mode="r")    
+    train = train.to(args.device, non_blocking=True)
     validation = np.memmap(args.val_data,dtype=np.uint16,mode="r")
+    validation = validation.to(args.device, non_blocking=True)
     args.valid_size = validation.size
     validation = torch.as_tensor(validation, dtype=torch.long)
     windowed_validation = validation.unfold(0, args.context_length + 1, args.context_length)
