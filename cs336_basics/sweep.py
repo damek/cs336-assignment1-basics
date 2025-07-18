@@ -37,7 +37,7 @@ cosine.add_argument("--cosine_cycle_final_iter", type=int, nargs="+", default=[N
                help="[cosine] Final iteration of the cosine cycle")
 
 p.add_argument("--grad_clip", type=float, nargs="+", default=[None])
-p.add_argument("--bs",  type=int,   nargs="+", default=[16],
+p.add_argument("--bs",  type=int,   nargs="+", default=[32],
                help="One or more batch-sizes")
 p.add_argument("--run_until_step", type=int, default=10_000,
                help="num_training_steps override")
