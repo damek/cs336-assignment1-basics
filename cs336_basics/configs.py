@@ -87,6 +87,8 @@ class TSRemoveRope(TSCfg):
 @dataclass 
 class TSSiLU(TSCfg):
     activation: str = "silu"
+    d_model: int = 512
+    d_ff: int = 4*d_model
 
 
 # ----- Load config -----
