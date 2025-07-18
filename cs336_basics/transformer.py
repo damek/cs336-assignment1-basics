@@ -169,6 +169,7 @@ class transformer_block(nn.Module):
 
         self.MHA = multihead_self_attention(num_heads=num_heads, d_model=d_model, max_seq_length=max_seq_length, theta=theta, device=device, dtype=dtype)
         if activation.lower() == "silu":
+            print("Using SiLU activation")
             self.FFN = PositionwiseFeedForwardSiLU(d_model=d_model, d_ff=d_ff, device=device)
         else:
             self.FFN = PositionwiseFeedForward(d_model=d_model, d_ff=d_ff, device=device)
