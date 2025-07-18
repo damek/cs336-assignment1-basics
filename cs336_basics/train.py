@@ -6,6 +6,9 @@ import torch
 import wandb, time
 import pathlib
 import configs
+import cProfile
+import pstats
+
 
 @torch.no_grad
 def eval(windowed_validation : torch.Tensor, model, args):
@@ -141,4 +144,14 @@ def main():
                 
 
 if __name__ == "__main__":
+    profiler = cProfile.Profile()
+    profiler.enable()
+    
     main()
+    
+    profiler.disable()
+    profiler.dump_stats('train_profile.prof')
+    
+    # Print top results immediately
+    stats = pstats.Stats(profiler)
+    stats.sort_stats('cumulative').print_stats(20)
