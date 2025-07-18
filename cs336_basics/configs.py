@@ -90,6 +90,23 @@ class TSSiLU(TSCfg):
     d_model: int = 512
     d_ff: int = 4*d_model
 
+@dataclass
+class OWTCfg(TransformerCfg):
+    # The base run, shares same parameters with TSCfg
+    # ─── Dataset ───────────────────────────────────────────────────────────
+    train_data:      str = "data/OpenWebText32k/train.bin"
+    val_data:        str = "data/OpenWebText32k/val.bin"
+    vocab_path:      str = "data/OpenWebText32k/vocab.txt"
+    merges_path:     str = "data/OpenWebText32k/merges.txt"
+    wandb_project:   str = "OpenWebText32k"
+
+    checkpoint_dir:  str = "OpenWebText32k_runs/"
+
+    
+
+# @dataclass
+# class OWTMediumModel(OWTCfg):
+
 
 # ----- Load config -----
 import argparse, json, importlib, pathlib
