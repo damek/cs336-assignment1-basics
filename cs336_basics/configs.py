@@ -101,6 +101,7 @@ class OWTCfg(TransformerCfg):
     wandb_project:   str = "OpenWebText32k"
 
     checkpoint_dir:  str = "OpenWebText32k_runs/"
+    vocab_size: int = 32000
 
     
 
