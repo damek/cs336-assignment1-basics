@@ -495,3 +495,13 @@ def data_from_numpy(x_np, batch_size, context_length, device):
     batch_np = np.stack([x_np[i : i + context_length + 1] for i in idx])
     batch = torch.from_numpy(batch_np).to(device, dtype=torch.long, non_blocking=True)
     return batch[:, :-1], batch[:, 1:]
+
+def data_from_gpu_tensor(gpu_tensor, batch_size, context_length):
+    max_start = len(gpu_tensor) - context_length - 1
+    starts = torch.randint(0, max_start, (batch_size,), device=gpu_tensor.device)
+    indices = starts.unsqueeze(1) + torch.arange(context_length + 1, device=gpu_tensor.device)
+    sequences = gpu_tensor[indices]
+    data = sequences[:, :-1]     
+    targets = sequences[:, 1:]   
+    
+    return data, targets
