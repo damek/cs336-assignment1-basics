@@ -95,7 +95,7 @@ def main():
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
-        if args.lrq_scheduler == "cosine":
+        if args.lr_scheduler == "cosine":
             optimizer.set_lr(optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
         optimizer.zero_grad()
         loss = transformer.cross_entropy(model.forward(data), targets)
