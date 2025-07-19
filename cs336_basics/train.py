@@ -35,8 +35,8 @@ import pstats
 
 
 
-def log_layerwise_adamw_histograms(optimizer, model, step, log_freq=100):
-    """Log per-layer histograms of AdamW momentum (m) and variance (v)"""
+def log_layerwise_adamw_updates(optimizer, model, step, log_freq=100):
+    """Log per-layer histograms of AdamW update directions: m/(sqrt(v) + eps)"""
     if step % log_freq != 0:
         return
     
@@ -52,10 +52,12 @@ def log_layerwise_adamw_histograms(optimizer, model, step, log_freq=100):
         
         param_to_layer[id(param)] = layer_name
     
-    # Collect m and v values grouped by layer
-    layer_data = {}
+    # Collect update directions grouped by layer
+    layer_updates = {}
     
     for group in optimizer.param_groups:
+        eps = group['eps']  # Get epsilon from optimizer config
+        
         for param in group['params']:
             if param.grad is None:
                 continue
@@ -66,31 +68,39 @@ def log_layerwise_adamw_histograms(optimizer, model, step, log_freq=100):
             
             layer_name = param_to_layer.get(id(param), 'unknown')
             
-            if layer_name not in layer_data:
-                layer_data[layer_name] = {'m_values': [], 'v_values': []}
+            # Compute the actual update direction: m / (sqrt(v) + eps)
+            m = state['m']
+            v = state['v']
+            update_direction = m / (torch.sqrt(v) + eps)
             
-            # Collect flattened values for this layer
-            layer_data[layer_name]['m_values'].append(state['m'].flatten())
-            layer_data[layer_name]['v_values'].append(state['v'].flatten())
+            if layer_name not in layer_updates:
+                layer_updates[layer_name] = []
+            
+            # Collect flattened update directions for this layer
+            layer_updates[layer_name].append(update_direction.flatten())
     
     # Create histograms for each layer
     log_dict = {}
     
-    for layer_name, data in layer_data.items():
-        if len(data['m_values']) > 0:
+    for layer_name, updates in layer_updates.items():
+        if len(updates) > 0:
             # Concatenate all parameters in this layer
-            layer_m = torch.cat(data['m_values'])
-            layer_v = torch.cat(data['v_values'])
+            layer_update_directions = torch.cat(updates)
             
-            # Create histograms
-            log_dict[f"adamw_histograms/{layer_name}/momentum"] = wandb.Histogram(layer_m.cpu().numpy())
-            log_dict[f"adamw_histograms/{layer_name}/variance"] = wandb.Histogram(layer_v.cpu().numpy())
+            # Create histogram of update directions
+            log_dict[f"adamw_updates/{layer_name}/update_directions"] = wandb.Histogram(layer_update_directions.cpu().numpy())
             
-            # Also add some summary stats per layer
-            log_dict[f"adamw_stats/{layer_name}/momentum_norm"] = layer_m.norm().item()
-            log_dict[f"adamw_stats/{layer_name}/variance_norm"] = layer_v.norm().item()
-            log_dict[f"adamw_stats/{layer_name}/momentum_mean"] = layer_m.mean().item()
-            log_dict[f"adamw_stats/{layer_name}/variance_mean"] = layer_v.mean().item()
+            # Add useful summary statistics
+            log_dict[f"adamw_updates/{layer_name}/update_norm"] = layer_update_directions.norm().item()
+            log_dict[f"adamw_updates/{layer_name}/update_mean"] = layer_update_directions.mean().item()
+            log_dict[f"adamw_updates/{layer_name}/update_std"] = layer_update_directions.std().item()
+            log_dict[f"adamw_updates/{layer_name}/update_max"] = layer_update_directions.max().item()
+            log_dict[f"adamw_updates/{layer_name}/update_min"] = layer_update_directions.min().item()
+            
+            # Useful additional metrics
+            log_dict[f"adamw_updates/{layer_name}/update_abs_mean"] = layer_update_directions.abs().mean().item()
+            log_dict[f"adamw_updates/{layer_name}/num_positive"] = (layer_update_directions > 0).sum().item()
+            log_dict[f"adamw_updates/{layer_name}/num_negative"] = (layer_update_directions < 0).sum().item()
     
     if log_dict:
         wandb.log(log_dict, step=step)
@@ -227,7 +237,7 @@ def main():
                 "wall_time"      : time_total,       
             }, step=iter)
 
-            log_layerwise_adamw_histograms(optimizer, model, iter, log_freq=100)
+            log_layerwise_adamw_updates(optimizer, model, iter, log_freq=100)
 
 
 
