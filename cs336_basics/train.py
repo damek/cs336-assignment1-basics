@@ -46,6 +46,7 @@ def main():
     cfg.checkpoint_path = str(run_dir) + "/"   # ensure trailing slash
     args = cfg
     run = wandb.init(project=args.wandb_project, group=group, name=timestamped_name, config=args)
+    wandb.run.log_code(".")
     print("Training with args", args)
     train = torch.as_tensor(np.memmap(args.train_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     validation = torch.as_tensor(np.memmap(args.val_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
