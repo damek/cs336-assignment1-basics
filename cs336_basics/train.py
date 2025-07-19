@@ -1,9 +1,27 @@
 #!/usr/bin/env python3
 import os
+import sys
+
+# Set cache directories
 os.environ['TORCHINDUCTOR_CACHE_DIR'] = '/tmp/torchinductor_cache'
 os.environ['TORCH_HOME'] = '/tmp/torch_cache'
+os.environ['XDG_CACHE_HOME'] = '/tmp/cache'
+
+# Create directories
 os.makedirs('/tmp/torchinductor_cache', exist_ok=True)
 os.makedirs('/tmp/torch_cache', exist_ok=True)
+os.makedirs('/tmp/cache', exist_ok=True)
+
+# Patch getpass.getuser to return a dummy username
+import getpass
+original_getuser = getpass.getuser
+def patched_getuser():
+    try:
+        return original_getuser()
+    except KeyError:
+        return "cs336user"
+
+getpass.getuser = patched_getuser
 import torch
 torch.empty(1, device="cuda", requires_grad=True).backward() # prevents a bug on some systems
 import math
