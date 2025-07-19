@@ -35,52 +35,65 @@ import pstats
 
 
 
-def log_adamw_stats_detailed(optimizer, model, step, log_freq=100):
-    """Log AdamW stats with per-layer breakdown"""
+def log_layerwise_adamw_histograms(optimizer, model, step, log_freq=100):
+    """Log per-layer histograms of AdamW momentum (m) and variance (v)"""
     if step % log_freq != 0:
         return
     
-    layer_stats = {}
+    # Create mapping from parameter object to layer name
+    param_to_layer = {}
+    for name, param in model.named_parameters():
+        # Extract clean layer name (e.g., "layers.0.MHA.W_QKV" -> "layers.0.MHA")
+        layer_parts = name.split('.')
+        if len(layer_parts) >= 3:
+            layer_name = '.'.join(layer_parts[:-1])  # Remove the final parameter name
+        else:
+            layer_name = layer_parts[0] if layer_parts else name
+        
+        param_to_layer[id(param)] = layer_name
     
-    # Get parameter names for better logging
-    param_names = {id(p): name for name, p in model.named_parameters()}
+    # Collect m and v values grouped by layer
+    layer_data = {}
     
     for group in optimizer.param_groups:
-        for p in group['params']:
-            if p.grad is None:
+        for param in group['params']:
+            if param.grad is None:
                 continue
                 
-            state = optimizer.state[p]
-            if 'm' in state and 'v' in state:
-                # Get parameter name or use generic name
-                param_name = param_names.get(id(p), f"param_{id(p)}")
-                
-                m = state['m']
-                v = state['v']
-                
-                # Create cleaner layer names
-                layer_name = param_name.split('.')[0] if '.' in param_name else param_name
-                
-                if layer_name not in layer_stats:
-                    layer_stats[layer_name] = {'m': [], 'v': []}
-                
-                layer_stats[layer_name]['m'].append(m.flatten())
-                layer_stats[layer_name]['v'].append(v.flatten())
-    
-    # Log per-layer statistics
-    for layer_name, stats in layer_stats.items():
-        if len(stats['m']) > 0:
-            layer_m = torch.cat(stats['m'])
-            layer_v = torch.cat(stats['v'])
+            state = optimizer.state[param]
+            if 'm' not in state or 'v' not in state:
+                continue
             
-            wandb.log({
-                f"adamw_layers/{layer_name}_momentum_mean": layer_m.mean().item(),
-                f"adamw_layers/{layer_name}_momentum_std": layer_m.std().item(),
-                f"adamw_layers/{layer_name}_variance_mean": layer_v.mean().item(),
-                f"adamw_layers/{layer_name}_variance_std": layer_v.std().item(),
-                f"adamw_layers/{layer_name}_momentum_norm": layer_m.norm().item(),
-                f"adamw_layers/{layer_name}_variance_norm": layer_v.norm().item(),
-            }, step=step)
+            layer_name = param_to_layer.get(id(param), 'unknown')
+            
+            if layer_name not in layer_data:
+                layer_data[layer_name] = {'m_values': [], 'v_values': []}
+            
+            # Collect flattened values for this layer
+            layer_data[layer_name]['m_values'].append(state['m'].flatten())
+            layer_data[layer_name]['v_values'].append(state['v'].flatten())
+    
+    # Create histograms for each layer
+    log_dict = {}
+    
+    for layer_name, data in layer_data.items():
+        if len(data['m_values']) > 0:
+            # Concatenate all parameters in this layer
+            layer_m = torch.cat(data['m_values'])
+            layer_v = torch.cat(data['v_values'])
+            
+            # Create histograms
+            log_dict[f"adamw_histograms/{layer_name}/momentum"] = wandb.Histogram(layer_m.cpu().numpy())
+            log_dict[f"adamw_histograms/{layer_name}/variance"] = wandb.Histogram(layer_v.cpu().numpy())
+            
+            # Also add some summary stats per layer
+            log_dict[f"adamw_stats/{layer_name}/momentum_norm"] = layer_m.norm().item()
+            log_dict[f"adamw_stats/{layer_name}/variance_norm"] = layer_v.norm().item()
+            log_dict[f"adamw_stats/{layer_name}/momentum_mean"] = layer_m.mean().item()
+            log_dict[f"adamw_stats/{layer_name}/variance_mean"] = layer_v.mean().item()
+    
+    if log_dict:
+        wandb.log(log_dict, step=step)
 
 @torch.no_grad
 @torch.compile(backend="inductor", mode="reduce-overhead")
@@ -214,7 +227,7 @@ def main():
                 "wall_time"      : time_total,       
             }, step=iter)
 
-            log_adamw_stats_detailed(optimizer, model, iter, log_freq=100)
+            log_layerwise_adamw_histograms(optimizer, model, iter, log_freq=100)
 
 
 
