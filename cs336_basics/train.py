@@ -214,7 +214,7 @@ def main():
                 "wall_time"      : time_total,       
             }, step=iter)
 
-            log_adamw_stats_detailed(optimizer, model, iter, log_freq=100)
+            # log_adamw_stats_detailed(optimizer, model, iter, log_freq=100)
 
 
 
