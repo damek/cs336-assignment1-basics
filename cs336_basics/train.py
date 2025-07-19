@@ -159,14 +159,14 @@ def main():
                 
 
 if __name__ == "__main__":
-    profiler = cProfile.Profile()
-    profiler.enable()
+    # profiler = cProfile.Profile()
+    # profiler.enable()
     
     main()
     
-    profiler.disable()
-    profiler.dump_stats('train_profile.prof')
+    # profiler.disable()
+    # profiler.dump_stats('train_profile.prof')
     
-    # Print top results immediately
-    stats = pstats.Stats(profiler)
-    stats.sort_stats('cumulative').print_stats(20)
+    # # Print top results immediately
+    # stats = pstats.Stats(profiler)
+    # stats.sort_stats('cumulative').print_stats(20)
