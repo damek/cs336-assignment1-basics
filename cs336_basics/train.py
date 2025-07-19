@@ -107,8 +107,7 @@ def log_layerwise_adamw_updates(optimizer, model, step, log_freq=100):
 
 @torch.no_grad
 @torch.compile(backend="inductor", mode="reduce-overhead")
-def eval(windowed_validation : torch.Tensor, model, args):
-    model.eval()
+def eval(windowed_validation : torch.Tensor, loss_fn, args):
     num_windows = windowed_validation.shape[0]
     nb_batches = math.ceil(num_windows / args.batch_size)
     loss = 0
@@ -121,13 +120,11 @@ def eval(windowed_validation : torch.Tensor, model, args):
         batched_windows = windowed_validation[start_window:end_window]
         data = batched_windows[:, :-1].to(args.device)
         targets = batched_windows[:, 1:].to(args.device)
-        logits = model.forward(data)
-        loss_batch = transformer.cross_entropy(logits, targets)
+        loss_batch = loss_fn(data, targets)
         num_tokens_in_batch = args.context_length*chunk_size
         loss += loss_batch*num_tokens_in_batch    
         total_tokens += num_tokens_in_batch
 
-    model.train()
     return loss/total_tokens
 
 def main():
@@ -178,10 +175,19 @@ def main():
             loss = transformer.cross_entropy(model.forward(data), targets)
             loss.backward()
             return loss
+        @torch.compile(backend="inductor", mode="reduce-overhead")
+        def loss_fn(data, targets):
+            with torch.no_grad():
+                loss = transformer.cross_entropy(model.forward(data), targets)
+            return loss
     else: 
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
             loss.backward()
+            return loss
+        def loss_fn(data, targets):
+            with torch.no_grad():
+                loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
 
     optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
@@ -243,7 +249,7 @@ def main():
 
         if args.validation_every != None and (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
             print("Validating")
-            valid_loss = eval(windowed_validation, model, args)
+            valid_loss = eval(windowed_validation, loss_fn, args)
             wandb.log({
             "Validation loss": valid_loss,
             "wall_time"      : time_total,       
