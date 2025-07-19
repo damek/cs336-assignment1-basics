@@ -15,7 +15,7 @@ class Linear(nn.Module):
         # return torch.nn.functional.linear(x, self.param)
         # return einsum(self.param, x, "out_features in_features, ... in_features -> ... out_features")
         # return einsum(x, self.param, "... in_features, out_features in_features -> ... out_features") 
-        return einsum(x, self.param, "...i,oi->...o")
+        return torch.einsum("...i,oi->...o", x, self.param)
     
 class Embedding(nn.Module):
 
