@@ -92,17 +92,17 @@ def main():
     # Note that compile misbehaves on mps. 
     if args.compile and args.device == "cuda":
         import torch._inductor.config as config
-        config.max_autotune = True
+        config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
-        
+        torch.set_float32_matmul_precision('high')
         # These are the attributes that actually exist:
         if hasattr(config, 'triton'):
             if hasattr(config.triton, 'autotune_pointwise'):
-                config.triton.autotune_pointwise = True
+                config.triton.autotune_pointwise = False
         
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
-        @torch.compile(backend="inductor", mode="max-autotune")
+        @torch.compile(backend="inductor", mode="reduce-overhead")
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
             loss.backward()
