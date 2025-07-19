@@ -82,6 +82,7 @@ class Rope(nn.Module):
     def __init__(self, theta: float, d_k: int, max_seq_len: int, device=None):
         super().__init__()
         self.theta = theta
+        # self.token_positions_default = torch.arrange(max_seq_len, device=device)
         if theta != 0:
             i_vec = torch.arange(max_seq_len, device=device)[:, None]
             k_vec = torch.arange(d_k//2, device=device)[None, :]
@@ -99,13 +100,23 @@ class Rope(nn.Module):
     def forward(self, x: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor: 
         # Basic version
         if self.theta != 0:
-            even = x[...,token_positions,::2]
-            odd = x[...,token_positions,1::2]
-            c = self.R[0,token_positions, ...]
-            s = self.R[1,token_positions,...] 
-            tmp = even * s + odd * c      
-            x[...,token_positions,::2] = even * c - odd *s
-            x[...,token_positions,1::2] = tmp
+            if token_positions != None:
+                even = x[...,token_positions,::2]
+                odd = x[...,token_positions,1::2]
+                c = self.R[0,token_positions, ...]
+                s = self.R[1,token_positions,...] 
+                tmp = even * s + odd * c      
+                x[...,token_positions,::2] = even * c - odd *s
+                x[...,token_positions,1::2] = tmp
+            else:
+                even = x[...,::2]
+                odd = x[...,1::2]
+                c = self.R[0, ...]
+                s = self.R[1,...] 
+                tmp = even * s + odd * c      
+                x[...,::2] = even * c - odd *s
+                x[...,1::2] = tmp
+
         ## Complex version:
         # z = rearrange(x[...,token_positions,:], "... (d two) -> ... d two", two=2)
         # z=torch.view_as_complex(z)
@@ -148,13 +159,12 @@ class multihead_self_attention(nn.Module):
         self.R = Rope(theta=theta, max_seq_len=max_seq_length, d_k=d_model//num_heads, device=device)
         self.cmask = torch.ones((max_seq_length,max_seq_length), dtype=torch.bool, device=device).tril()
 
-
     def forward(self, X:torch.tensor, token_positions = None):
         QKV = self.W_QKV.forward(X)
         QKV = rearrange(QKV, "batch_size seq_length (three num_heads d_head) -> three num_heads batch_size seq_length d_head", three = 3, num_heads = self.num_heads)
         seq_length = QKV.shape[-2] # need to change to length of token positions
-        if token_positions == None:
-            token_positions = torch.arange(seq_length, device=QKV.device)
+        # if token_positions == None:
+        #     token_positions = self.token_positions_default
         QKV[:2, :] = self.R.forward(QKV[:2, :], token_positions=token_positions)
         # may need to squeeze here, not sure.
         # cmask = torch.ones((seq_length,seq_length), dtype=torch.bool).tril()
