@@ -92,8 +92,12 @@ def main():
     # Note that compile misbehaves on mps. 
     if args.compile and args.device == "cuda":
         import torch._inductor.config as config
-        config.max_autotune = False
-        config.force_disable_caches = False  # Keep caching for speed
+        config.triton.unique_kernel_names = True
+        config.triton.autotune_pointwise = True
+        config.triton.autotune_caching = True
+        config.coordinate_descent_tuning = True
+        config.epilogue_fusion = True
+        config.pattern_matcher = True
         
         # These are the attributes that actually exist:
         if hasattr(config, 'triton'):
