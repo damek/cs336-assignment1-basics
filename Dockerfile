@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-FROM nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.0-devel-ubuntu22.04 AS base
 
 # ──────────────────────────────────────────────────────────────
 # 1. System packages  (C tool-chain + git + Python 3.11)
