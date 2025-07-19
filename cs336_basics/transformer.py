@@ -100,7 +100,7 @@ class Rope(nn.Module):
     def forward(self, x: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor: 
         # Basic version
         if self.theta != 0:
-            if token_positions != None:
+            if token_positions is not None:
                 even = x[...,token_positions,::2]
                 odd = x[...,token_positions,1::2]
                 c = self.R[0,token_positions, ...]
