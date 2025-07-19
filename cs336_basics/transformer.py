@@ -134,7 +134,8 @@ class Rope(nn.Module):
     
 def softmax(x:torch.Tensor, dim: int):
     m = torch.max(x,dim=dim, keepdim=True)
-    x_exp = torch.exp(x - torch.broadcast_to(m.values, x.shape))
+    # x_exp = torch.exp(x - torch.broadcast_to(m.values, x.shape))
+    x_exp = torch.exp(x - m.values)
     sums = torch.sum(x_exp, dim = dim, keepdim=True)
     return x_exp / torch.broadcast_to(sums, x_exp.shape)
 
