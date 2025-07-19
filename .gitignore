@@ -163,3 +163,4 @@ cython_debug/
 *.zip
 .DS_Store
 secrets/*
+useful_commands.md
