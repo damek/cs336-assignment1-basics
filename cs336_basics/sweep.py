@@ -47,6 +47,7 @@ p.add_argument("--validation_every", type=int, default=None)
 p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
+p.add_argument("--num_layers", type=int, nargs="+", default=[4])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 p.add_argument("--resume_from", type=str, default=None)
 p.add_argument("--compile", type=str, default=False)
@@ -66,7 +67,7 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
 
-for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip):
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip, num_layers in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip, args.num_layers):
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
@@ -98,7 +99,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    cosine_decay=cosine_decay,
                    lr_scheduler=args.lr_scheduler,
                    grad_clip=grad_clip, 
-                   compile=args.compile)
+                   compile=args.compile,
+                   num_layers=num_layers)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
