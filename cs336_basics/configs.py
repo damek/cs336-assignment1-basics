@@ -105,8 +105,10 @@ class OWTCfg(TransformerCfg):
     # validation_every: int = 10000 # the validation set is 10 times larger than the val set for tiny stories, so 
     
 
-# @dataclass
-# class OWTMediumModel(OWTCfg):
+@dataclass
+class OWTMediumModel(OWTCfg):
+    d_model: int = 512
+    context_length: int = 1024
 
 
 # ----- Load config -----
