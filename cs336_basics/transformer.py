@@ -37,8 +37,10 @@ class RMSNorm(nn.Module):
         in_dtype = x.dtype
         x = x.to(dtype=torch.float32)
         d_model = self.d_model
-        denoms = torch.sqrt(einsum(x.square(), "... d_model -> ... ")/d_model + self.eps)
-        result = einsum(x*self.param, 1./denoms , "... d_model, ... -> ... d_model")
+        norm = x.sqrt().mean(dim=-1)
+        result = (x*x.rsqrt(norm + self.eps))*self.param
+        # denoms = torch.sqrt(einsum(x.square(), "... d_model -> ... ")/d_model + self.eps)
+        # result = einsum(x*self.param, 1./denoms , "... d_model, ... -> ... d_model")
         return result.to(in_dtype)
 
 def SiLU(param: torch.tensor): 
