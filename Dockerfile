@@ -37,8 +37,13 @@ RUN git clone --branch "$REPO_REF" --depth 1 "$REPO_URL" repo && git -C repo con
 # ──────────────────────────────────────────────────────────────
 # 3. Install ALL deps into repo-local venv (.venv/)
 # ──────────────────────────────────────────────────────────────
+# WORKDIR /src/repo
+# RUN uv sync --locked --no-editable && chmod -R a+rX .venv   
 WORKDIR /src/repo
-RUN uv sync --locked --no-editable && chmod -R a+rX .venv      
+RUN uv sync --locked --no-editable && \
+    uv pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu124 --upgrade && \
+    uv pip install triton --upgrade && \
+    chmod -R a+rX .venv   
 
 # ──────────────────────────────────────────────────────────────
 # 4. Runtime env  (venv + cache dirs)
