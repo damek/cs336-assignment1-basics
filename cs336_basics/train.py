@@ -153,6 +153,6 @@ if __name__ == "__main__":
     profiler.disable()
     profiler.dump_stats('train_profile.prof')
     
-    Print top results immediately
+    # Print top results immediately
     stats = pstats.Stats(profiler)
     stats.sort_stats('cumulative').print_stats(20)
