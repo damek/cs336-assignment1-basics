@@ -86,8 +86,8 @@ def main():
         print("Using constant learning rate scheduler:lr", args.lr)
         optimizer.set_lr(args.lr)
 
-    if args.validation_every == None: 
-        args.validation_every = 100
+    # if args.validation_every == None: 
+    #     args.validation_every = 100
 
     lambda_ema = .98
     wandb.watch(model, log="all", log_freq=100)
@@ -116,7 +116,7 @@ def main():
             }, step=iter)
 
 
-        if (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
+        if args.validation_every != None and (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
             print("Validating")
             valid_loss = eval(windowed_validation, model, args)
             wandb.log({
