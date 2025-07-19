@@ -12,8 +12,9 @@ class Linear(nn.Module):
         self.param = nn.Parameter(torch.torch.nn.init.trunc_normal_(W, std=std, a=-std, b=std))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return torch.nn.functional.linear(x, self.param)
+        # return torch.nn.functional.linear(x, self.param)
         # return einsum(self.param, x, "out_features in_features, ... in_features -> ... out_features")
+        return einsum(x, self.param, "... in_features, out_features in_features -> ... out_features") 
     
 class Embedding(nn.Module):
 
