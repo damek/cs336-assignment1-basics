@@ -142,7 +142,7 @@ def scaled_dot_product_attention(Q:torch.Tensor, K: torch.Tensor, V, mask = None
     QKT.div_(np.sqrt(d_k))
     softmax_dim = len(QKT.shape) - 1
     seq_length = Q.shape[-2]
-    if mask != None:
+    if mask is not None:
         result = torch.where(mask[:seq_length,:seq_length],
         0,
         -float('inf'))
