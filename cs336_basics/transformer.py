@@ -99,23 +99,27 @@ class Rope(nn.Module):
 
     def forward(self, x: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor: 
         # Basic version
-        if self.theta != 0:
-            if token_positions is not None:
-                even = x[...,token_positions,::2]
-                odd = x[...,token_positions,1::2]
-                c = self.R[0,token_positions, ...]
-                s = self.R[1,token_positions,...] 
-                tmp = even * s + odd * c      
-                x[...,token_positions,::2] = even * c - odd *s
-                x[...,token_positions,1::2] = tmp
-            else:
-                even = x[...,::2]
-                odd = x[...,1::2]
-                c = self.R[0, ...]
-                s = self.R[1,...] 
-                tmp = even * s + odd * c      
-                x[...,::2] = even * c - odd *s
-                x[...,1::2] = tmp
+        if self.theta == 0:
+            return  x
+    
+        seq_len = x.shape[-2]
+        if token_positions is None:
+            even = x[...,::2]
+            odd = x[...,1::2]
+            c = self.R[0, :seq_len,...]
+            s = self.R[1,:seq_len,...] 
+            tmp = even * s + odd * c      
+            x[...,::2] = even * c - odd *s
+            x[...,1::2] = tmp
+        else:
+            even = x[...,token_positions,::2]
+            odd = x[...,token_positions,1::2]
+            c = self.R[0,token_positions, ...]
+            s = self.R[1,token_positions,...] 
+            tmp = even * s + odd * c      
+            x[...,token_positions,::2] = even * c - odd *s
+            x[...,token_positions,1::2] = tmp
+
 
         ## Complex version:
         # z = rearrange(x[...,token_positions,:], "... (d two) -> ... d two", two=2)
