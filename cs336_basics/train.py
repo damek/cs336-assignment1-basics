@@ -94,10 +94,8 @@ def main():
         import torch._inductor.config as config
         config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
-        torch.set_float32_matmul_precision('high')
-        torch.backends.cuda.matmul.allow_tf32 = True      # Enable TF32 for matmul
-        torch.backends.cudnn.allow_tf32 = True           # Enable TF32 for convolutions  
-        torch.backends.cudnn.benchmark = True            # Optimize for fixed input sizes
+        torch.set_float32_matmul_precision('medium')
+        # torch.backends.cudnn.benchmark = True            # Optimize for fixed input sizes
         # These are the attributes that actually exist:
         if hasattr(config, 'triton'):
             if hasattr(config.triton, 'autotune_pointwise'):
