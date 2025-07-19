@@ -71,6 +71,10 @@ def main():
         config.max_autotune_gemm = False
         config.triton.autotune_pointwise = False
         config.triton.autotune_cublasLt = False
+        
+        # Force disable interpreter mode that's causing issues
+        config.triton.use_cuda_codegen = True
+        config.triton.disable_interpreter = True
         # model = torch.compile(model, backend="aot_eager", mode="reduce-overhead")
         backend = "inductor"
         # model   = torch.compile(model, backend=backend, mode="default")
