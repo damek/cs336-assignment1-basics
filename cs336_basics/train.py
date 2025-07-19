@@ -78,7 +78,6 @@ def main():
     validation = torch.as_tensor(np.memmap(args.val_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     args.valid_size = validation.size
     windowed_validation = validation.unfold(0, args.context_length + 1, args.context_length)
-
     if args.device == "cuda" and torch.cuda.is_available():
         args.device = "cuda"
     elif args.device == "mps" and torch.backends.mps.is_available():
@@ -93,17 +92,13 @@ def main():
     # Note that compile misbehaves on mps. 
     if args.compile and args.device == "cuda":
         import torch._inductor.config as config
-        config.triton.unique_kernel_names = True
-        config.triton.autotune_pointwise = True
-        config.triton.autotune_caching = True
-        config.coordinate_descent_tuning = True
-        config.epilogue_fusion = True
-        config.pattern_matcher = True
+        config.max_autotune = True
+        config.force_disable_caches = False  # Keep caching for speed
         
         # These are the attributes that actually exist:
         if hasattr(config, 'triton'):
             if hasattr(config.triton, 'autotune_pointwise'):
-                config.triton.autotune_pointwise = False
+                config.triton.autotune_pointwise = True
         
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
@@ -155,7 +150,7 @@ def main():
         if args.lr_scheduler == "cosine":
             optimizer.set_lr(optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
 
-        optimizer.zero_grad(set_to_none=True)
+        optimizer.zero_grad()
         loss = training_step(model, data, targets)
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
