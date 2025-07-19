@@ -67,18 +67,15 @@ def main():
     if args.compile and args.device == "cuda":
         import torch._inductor.config as config
         config.max_autotune = False
-        config.max_autotune_pointwise = False  
-        config.max_autotune_gemm = False
-        config.triton.autotune_pointwise = False
-        config.triton.autotune_cublasLt = False
+        config.force_disable_caches = False  # Keep caching for speed
         
-        # Force disable interpreter mode that's causing issues
-        config.triton.use_cuda_codegen = True
-        config.triton.disable_interpreter = True
-        # model = torch.compile(model, backend="aot_eager", mode="reduce-overhead")
+        # These are the attributes that actually exist:
+        if hasattr(config, 'triton'):
+            if hasattr(config.triton, 'autotune_pointwise'):
+                config.triton.autotune_pointwise = False
+        
         backend = "inductor"
-        # model   = torch.compile(model, backend=backend, mode="default")
-        model = torch.compile(model, backend=backend, mode="default")
+        model = torch.compile(model, backend=backend, mode="reduce-overhead")
 
     optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     print("Weight decay", args.weight_decay)
