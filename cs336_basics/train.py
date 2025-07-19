@@ -4,10 +4,11 @@ os.environ['TORCHINDUCTOR_CACHE_DIR'] = '/tmp/torchinductor_cache'
 os.environ['TORCH_HOME'] = '/tmp/torch_cache'
 os.makedirs('/tmp/torchinductor_cache', exist_ok=True)
 os.makedirs('/tmp/torch_cache', exist_ok=True)
+import torch
+torch.empty(1, device="cuda", requires_grad=True).backward() # prevents a bug on some systems
 import math
 import transformer, optimization, tokenizer_utils
 import numpy as np
-import torch
 import wandb, time
 import pathlib
 import configs
