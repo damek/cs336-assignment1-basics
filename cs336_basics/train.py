@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+import os
+os.environ['TORCHINDUCTOR_CACHE_DIR'] = '/tmp/torchinductor_cache'
+os.environ['TORCH_HOME'] = '/tmp/torch_cache'
+os.makedirs('/tmp/torchinductor_cache', exist_ok=True)
+os.makedirs('/tmp/torch_cache', exist_ok=True)
 import math
 import transformer, optimization, tokenizer_utils
 import numpy as np
@@ -8,6 +13,7 @@ import pathlib
 import configs
 import cProfile
 import pstats
+
 
 
 @torch.no_grad
