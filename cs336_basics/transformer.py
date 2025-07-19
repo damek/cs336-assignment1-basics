@@ -11,8 +11,6 @@ class Linear(nn.Module):
         std = np.sqrt(2/(in_features + out_features)).item()
         self.param = nn.Parameter(torch.torch.nn.init.trunc_normal_(W, std=std, a=-std, b=std))
 
-  
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return torch.nn.functional.linear(x, self.param)
         # return einsum(self.param, x, "out_features in_features, ... in_features -> ... out_features")
@@ -241,7 +239,7 @@ def cross_entropy(logits: torch.tensor, targets):
     logits = rearrange(logits, "b c ... -> (b c) ...")
     targets = rearrange(targets, "b c ... -> (b c) ...")
     m = torch.max(logits,dim=-1, keepdim=True)
-    subm = logits - torch.broadcast_to(m.values, logits.shape)
+    subm = logits - m.values
     x_exp = torch.exp(subm)
     sums = torch.sum(x_exp, dim =-1, keepdim=True)
     result = torch.gather(subm, 1, targets.unsqueeze(1)).sum()/len(targets)
