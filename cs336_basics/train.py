@@ -78,6 +78,7 @@ def main():
     validation = torch.as_tensor(np.memmap(args.val_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     args.valid_size = validation.size
     windowed_validation = validation.unfold(0, args.context_length + 1, args.context_length)
+    windowed_validation = windowed_validation.pin_memory() if args.device == "cuda" else windowed_validation
     if args.device == "cuda" and torch.cuda.is_available():
         args.device = "cuda"
     elif args.device == "mps" and torch.backends.mps.is_available():
