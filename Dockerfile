@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1.6
-FROM nvidia/cuda:12.4.0-devel-ubuntu22.04 AS base
+FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu24.04 AS base
 
 # ──────────────────────────────────────────────────────────────
-# 1. System packages  (C tool-chain + git + Python 3.11)
+# 1. System packages  (C tool-chain + git + Python 3.12)
 # ──────────────────────────────────────────────────────────────
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        python3.11 python3.11-venv python3.11-dev python3-pip \
+        python3.12 python3.12-venv python3.12-dev python3-pip \
         git ca-certificates \
         build-essential clang llvm \
         cuda-compiler-12-6 \
@@ -21,13 +21,13 @@ ENV PATH="$CUDA_HOME/bin:${PATH}"
 ENV LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
 
 # simple alias so "python" is always there
-RUN ln -s /usr/bin/python3.11 /usr/local/bin/python
+RUN ln -s /usr/bin/python3.12 /usr/local/bin/python
 
 # ──────────────────────────────────────────────────────────────
 # 2. uv installer + clone code snapshot
 # ──────────────────────────────────────────────────────────────
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-ENV UV_PYTHON=python3.11
+ENV UV_PYTHON=python3.12
 
 WORKDIR /src
 ARG REPO_URL=https://github.com/damek/cs336-assignment1-basics.git
@@ -37,13 +37,11 @@ RUN git clone --branch "$REPO_REF" --depth 1 "$REPO_URL" repo && git -C repo con
 # ──────────────────────────────────────────────────────────────
 # 3. Install ALL deps into repo-local venv (.venv/)
 # ──────────────────────────────────────────────────────────────
-# WORKDIR /src/repo
-# RUN uv sync --locked --no-editable && chmod -R a+rX .venv   
 WORKDIR /src/repo
 RUN uv sync --locked --no-editable && \
-    uv pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu124 --upgrade && \
+    uv pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu126 --upgrade && \
     uv pip install triton --upgrade && \
-    chmod -R a+rX .venv   
+    chmod -R a+rX .venv
 
 # ──────────────────────────────────────────────────────────────
 # 4. Runtime env  (venv + cache dirs)
