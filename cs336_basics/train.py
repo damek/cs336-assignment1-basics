@@ -91,6 +91,7 @@ def main():
     lambda_ema = .98
     wandb.watch(model, log="all", log_freq=100)
     time_total = 0
+    print("validation_every", args.validation_every)
     print("print_every", args.print_every)
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
