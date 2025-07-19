@@ -116,7 +116,7 @@ def main():
             }, step=iter)
 
 
-        if (iter+1) % args.validation_every == 0 or iter == args.run_until_step - 1:  
+        if (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
             print("Validating")
             valid_loss = eval(windowed_validation, model, args)
             wandb.log({
