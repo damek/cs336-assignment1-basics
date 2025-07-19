@@ -35,6 +35,53 @@ import pstats
 
 
 
+def log_adamw_stats_detailed(optimizer, model, step, log_freq=100):
+    """Log AdamW stats with per-layer breakdown"""
+    if step % log_freq != 0:
+        return
+    
+    layer_stats = {}
+    
+    # Get parameter names for better logging
+    param_names = {id(p): name for name, p in model.named_parameters()}
+    
+    for group in optimizer.param_groups:
+        for p in group['params']:
+            if p.grad is None:
+                continue
+                
+            state = optimizer.state[p]
+            if 'm' in state and 'v' in state:
+                # Get parameter name or use generic name
+                param_name = param_names.get(id(p), f"param_{id(p)}")
+                
+                m = state['m']
+                v = state['v']
+                
+                # Create cleaner layer names
+                layer_name = param_name.split('.')[0] if '.' in param_name else param_name
+                
+                if layer_name not in layer_stats:
+                    layer_stats[layer_name] = {'m': [], 'v': []}
+                
+                layer_stats[layer_name]['m'].append(m.flatten())
+                layer_stats[layer_name]['v'].append(v.flatten())
+    
+    # Log per-layer statistics
+    for layer_name, stats in layer_stats.items():
+        if len(stats['m']) > 0:
+            layer_m = torch.cat(stats['m'])
+            layer_v = torch.cat(stats['v'])
+            
+            wandb.log({
+                f"adamw_layers/{layer_name}_momentum_mean": layer_m.mean().item(),
+                f"adamw_layers/{layer_name}_momentum_std": layer_m.std().item(),
+                f"adamw_layers/{layer_name}_variance_mean": layer_v.mean().item(),
+                f"adamw_layers/{layer_name}_variance_std": layer_v.std().item(),
+                f"adamw_layers/{layer_name}_momentum_norm": layer_m.norm().item(),
+                f"adamw_layers/{layer_name}_variance_norm": layer_v.norm().item(),
+            }, step=step)
+
 @torch.no_grad
 @torch.compile(backend="inductor", mode="reduce-overhead")
 def eval(windowed_validation : torch.Tensor, model, args):
@@ -166,6 +213,9 @@ def main():
                 "EMA train loss": ema_loss,
                 "wall_time"      : time_total,       
             }, step=iter)
+
+            log_adamw_stats_detailed(optimizer, model, iter, log_freq=100)
+
 
 
         if args.validation_every != None and (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
