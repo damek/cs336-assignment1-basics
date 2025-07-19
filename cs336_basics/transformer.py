@@ -163,8 +163,6 @@ class multihead_self_attention(nn.Module):
         QKV = self.W_QKV.forward(X)
         QKV = rearrange(QKV, "batch_size seq_length (three num_heads d_head) -> three num_heads batch_size seq_length d_head", three = 3, num_heads = self.num_heads)
         seq_length = QKV.shape[-2] # need to change to length of token positions
-        # if token_positions == None:
-        #     token_positions = self.token_positions_default
         QKV[:2, :] = self.R.forward(QKV[:2, :], token_positions=token_positions)
         # may need to squeeze here, not sure.
         # cmask = torch.ones((seq_length,seq_length), dtype=torch.bool).tril()
