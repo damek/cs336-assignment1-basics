@@ -142,7 +142,7 @@ def softmax(x:torch.Tensor, dim: int):
 
 def scaled_dot_product_attention(Q:torch.Tensor, K: torch.Tensor, V, mask = None):
     d_k = Q.shape[-1]
-    QKT = einsum(Q, K, "batch_size ... queries d_k, batch_size ... keys d_k -> batch_size ... queries keys")
+    QKT = einsum(Q, K, "... queries d_k, ... keys d_k -> ... queries keys")
     QKT.div_(np.sqrt(d_k))
     softmax_dim = len(QKT.shape) - 1
     seq_length = Q.shape[-2]
