@@ -94,6 +94,24 @@ def main():
     time_total = 0
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
+    def count_model_parameters(model):
+        total_params = 0
+        param_tensors = 0
+        
+        print("Parameter breakdown:")
+        for name, param in model.named_parameters():
+            param_tensors += 1
+            param_count = param.numel()
+            total_params += param_count
+            print(f"  {name}: {param.shape} = {param_count:,} parameters")
+        
+        print(f"\nTotal: {param_tensors} parameter tensors, {total_params:,} total parameters")
+        return param_tensors
+
+    param_tensor_count = count_model_parameters(model)
+    print(f"Expected optimizer squares per step: {param_tensor_count}")
+    return 
+
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
