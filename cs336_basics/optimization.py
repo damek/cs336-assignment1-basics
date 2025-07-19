@@ -33,9 +33,16 @@ class AdamW(torch.optim.Optimizer):
                     continue
                 
                 state = self.state[p]
-                m = state.get('m', torch.zeros_like(p))
-                v = state.get('v', torch.zeros_like(p))
-                t = state.get('t', 1)
+                if 'm' not in state:
+                    state['m'] = torch.zeros_like(p)
+                if 'v' not in state:
+                    state['v'] = torch.zeros_like(p)
+                if 't' not in state:
+                    state['t'] = 1
+                
+                m = state['m']
+                v = state['v']
+                t = state['t']
                 grad = p.grad
 
                 m = beta_1*m + (1-beta_1)*grad
