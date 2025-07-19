@@ -107,8 +107,8 @@ class OWTCfg(TransformerCfg):
 
 @dataclass
 class OWTMedium(OWTCfg):
-    d_model: int = 512
-    context_length: int = 512
+    d_model: int = 768
+    context_length: int = 768
 
 
 # ----- Load config -----
