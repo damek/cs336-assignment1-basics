@@ -48,6 +48,11 @@ ENV VIRTUAL_ENV=/src/repo/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV WANDB_DIR=/src/repo/cs336_basics/wandb \
     HF_HOME=/src/repo/hf_cache \
-    TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor
+    TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor_cache \
+    TORCH_HOME=/tmp/torch_cache \
+    XDG_CACHE_HOME=/tmp/cache
+
+RUN mkdir -p /tmp/torchinductor_cache /tmp/torch_cache /tmp/cache && \
+    chmod -R 777 /tmp/torchinductor_cache /tmp/torch_cache /tmp/cache
 
 CMD ["python", "-m", "cs336_basics.train"]
