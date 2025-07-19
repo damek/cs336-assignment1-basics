@@ -65,9 +65,16 @@ def main():
     # # Compile model (note this changes the names of params to include _orig..., so you need to compile again before loading the checkpoint).
     # Note that compile misbehaves on mps. 
     if args.compile and args.device == "cuda":
+        import torch._inductor.config as config
+        config.max_autotune = False
+        config.max_autotune_pointwise = False  
+        config.max_autotune_gemm = False
+        config.triton.autotune_pointwise = False
+        config.triton.autotune_cublasLt = False
+        # model = torch.compile(model, backend="aot_eager", mode="reduce-overhead")
         backend = "inductor"
         # model   = torch.compile(model, backend=backend, mode="default")
-        model = torch.compile(model, backend=backend, mode="reduce-overhead")
+        model = torch.compile(model, backend=backend, mode="default")
 
     optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     print("Weight decay", args.weight_decay)
