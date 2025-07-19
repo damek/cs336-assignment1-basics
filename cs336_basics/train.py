@@ -36,6 +36,7 @@ import pstats
 
 
 @torch.no_grad
+@torch.compile(backend="inductor", mode="reduce-overhead")
 def eval(windowed_validation : torch.Tensor, model, args):
     model.eval()
     num_windows = windowed_validation.shape[0]
@@ -100,7 +101,17 @@ def main():
                 config.triton.autotune_pointwise = False
         
         backend = "inductor"
-        model = torch.compile(model, backend=backend, mode="reduce-overhead")
+        # model = torch.compile(model, backend=backend, mode="reduce-overhead")
+        @torch.compile(backend="inductor", mode="reduce-overhead")
+        def training_step(model, data, targets):
+            loss = transformer.cross_entropy(model.forward(data), targets)
+            loss.backward()
+            return loss
+    else: 
+        def training_step(model, data, targets):
+            loss = transformer.cross_entropy(model.forward(data), targets)
+            loss.backward()
+            return loss
 
     optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     print("Weight decay", args.weight_decay)
@@ -129,6 +140,8 @@ def main():
     time_total = 0
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
+
+
     
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
@@ -136,11 +149,10 @@ def main():
         if args.lr_scheduler == "cosine":
             optimizer.set_lr(optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
         optimizer.zero_grad()
-        loss = transformer.cross_entropy(model.forward(data), targets)
-        loss.backward()
+        loss = training_step(model, data, targets)
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
-        optimizer.step()
+        optimizer.step(loss)
         ema_loss = (1-lambda_ema) * loss.detach() + lambda_ema*ema_loss
         time_end = time.perf_counter()  
         time_total += time_end - time_start
