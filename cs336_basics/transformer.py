@@ -36,7 +36,6 @@ class RMSNorm(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         in_dtype = x.dtype
         x = x.to(dtype=torch.float32)
-        d_model = self.d_model
         norm = x.square().mean(dim=-1, keepdim=True)
         result = (x*torch.rsqrt(norm + self.eps))*self.param
         # denoms = torch.sqrt(einsum(x.square(), "... d_model -> ... ")/d_model + self.eps)
