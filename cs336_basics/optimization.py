@@ -48,11 +48,11 @@ class AdamW(torch.optim.Optimizer):
                 # m = beta_1*m + (1-beta_1)*grad
                 m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
                 # v = beta_2*v + (1-beta_2)*grad.square()
-                v.mul_(beta_2).add_(grad.square_(), alpha = 1-beta_2)
+                v.mul_(beta_2).add_(grad.square(), alpha = 1-beta_2)
                 alpha_t = lr*math.sqrt(1-math.pow(beta_2,t))/(1-math.pow(beta_1, t))
                 # p.data -= alpha_t * m.div(v.sqrt() + eps)
                 denom = v.sqrt().add_(eps)
-                p.data.addcdiv(-m, denom)
+                p.data.addcdiv(m, denom, value = -alpha_t)
                 # p.data -= lr*lambda_wd*p.data
                 p.data.mul_(1-lr*lambda_wd)
 
