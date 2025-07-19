@@ -106,13 +106,15 @@ def log_layerwise_adamw_updates(optimizer, model, step, log_freq=100):
         wandb.log(log_dict, step=step)
 
 @torch.no_grad
-@torch.compile(backend="inductor", mode="reduce-overhead")
 def eval(windowed_validation : torch.Tensor, loss_fn, args):
     num_windows = windowed_validation.shape[0]
     nb_batches = math.ceil(num_windows / args.batch_size)
     loss = 0
     total_tokens = 0
+    print(f"Evaluating {nb_batches} batches")
     for i in range(nb_batches):
+        if i % 100 == 0:
+            print(f"Batch {i} of {nb_batches}")
         # make sure to multiply loss by batch size*context_length
         start_window = args.batch_size*i
         end_window = min((i+1)*args.batch_size, num_windows)
