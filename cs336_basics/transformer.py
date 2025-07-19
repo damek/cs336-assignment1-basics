@@ -14,7 +14,8 @@ class Linear(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # return torch.nn.functional.linear(x, self.param)
         # return einsum(self.param, x, "out_features in_features, ... in_features -> ... out_features")
-        return einsum(x, self.param, "... in_features, out_features in_features -> ... out_features") 
+        # return einsum(x, self.param, "... in_features, out_features in_features -> ... out_features") 
+        return einsum(x, self.params, "...i, oi-> ...o")
     
 class Embedding(nn.Module):
 
