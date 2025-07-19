@@ -102,8 +102,7 @@ class OWTCfg(TransformerCfg):
 
     checkpoint_dir:  str = "OpenWebText32k_runs/"
     vocab_size: int = 32000
-    validation_every: int = 10000 # the validation set is 10 times larger than the val set for tiny stories, so because it is slow we'll only do it 4 times.
-
+    # validation_every: int = 10000 # the validation set is 10 times larger than the val set for tiny stories, so 
     
 
 # @dataclass

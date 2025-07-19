@@ -123,7 +123,7 @@ def softmax(x:torch.Tensor, dim: int):
 def scaled_dot_product_attention(Q:torch.Tensor, K: torch.Tensor, V, mask = None):
     d_k = Q.shape[-1]
     QKT = einsum(Q, K, "batch_size ... queries d_k, batch_size ... keys d_k -> batch_size ... queries keys")
-    QKT.mul_(1/np.sqrt(d_k))
+    QKT.div_(np.sqrt(d_k))
     softmax_dim = len(QKT.shape) - 1
     seq_length = Q.shape[-2]
     if mask != None:
@@ -145,7 +145,7 @@ class multihead_self_attention(nn.Module):
         self.num_heads = num_heads
         # if max_seq_length != None and theta != None:
         self.R = Rope(theta=theta, max_seq_len=max_seq_length, d_k=d_model//num_heads, device=device)
-        self.cmask = torch.ones((max_seq_length,max_seq_length), dtype=torch.bool).tril().to(device)
+        self.cmask = torch.ones((max_seq_length,max_seq_length), dtype=torch.bool, device=device).tril()
 
 
     def forward(self, X:torch.tensor, token_positions = None):

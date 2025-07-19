@@ -43,7 +43,7 @@ p.add_argument("--run_until_step", type=int, default=10_000,
                help="num_training_steps override")
 p.add_argument("--device", default="cuda")
 p.add_argument("--print_every", type=int, default=100)
-p.add_argument("--validation_every", type=int, default=500)
+p.add_argument("--validation_every", type=int, default=None)
 p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
