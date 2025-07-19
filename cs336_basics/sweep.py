@@ -49,6 +49,7 @@ p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 p.add_argument("--resume_from", type=str, default=None)
+p.add_argument("--compile", type=str, default=False)
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
@@ -96,7 +97,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    resume_from=args.resume_from,
                    cosine_decay=cosine_decay,
                    lr_scheduler=args.lr_scheduler,
-                   grad_clip=grad_clip)
+                   grad_clip=grad_clip, 
+                   compile=args.compile)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
