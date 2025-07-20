@@ -12,12 +12,9 @@ def adamw_step_inductor(compile = False):
     
     def step_impl(m, v, beta_1, beta_2, alpha_t, eps, lambda_wd, pdata, grad):
         m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
-        # v = beta_2*v + (1-beta_2)*grad.square()
         v.mul_(beta_2).addcmul_(grad, grad, value = 1-beta_2)
-        # p.data -= alpha_t * m.div(v.sqrt() + eps)
         denom = v.sqrt().add(eps)
         pdata.addcdiv_(m, denom, value = -alpha_t)
-        # p.data -= lr*lambda_wd*p.data
         pdata.mul_(1-lambda_wd)
 
     if compile:
