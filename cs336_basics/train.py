@@ -238,7 +238,7 @@ def main():
     #     args.validation_every = 100
 
     lambda_ema = .98
-    wandb.watch(model, log="all", log_freq=100)
+    # wandb.watch(model, log="all", log_freq=100)
     time_total = 0
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
@@ -277,7 +277,7 @@ def main():
                 "wall_time"      : time_total,       
             }, step=iter)
 
-            log_layerwise_adamw_updates(optimizer, model, iter, log_freq=100)
+            # log_layerwise_adamw_updates(optimizer, model, iter, log_freq=100)
 
 
 
