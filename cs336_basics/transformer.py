@@ -140,20 +140,40 @@ def softmax(x:torch.Tensor, dim: int):
     sums = torch.sum(x_exp, dim = dim, keepdim=True)
     return x_exp / torch.broadcast_to(sums, x_exp.shape)
 
-def scaled_dot_product_attention(Q:torch.Tensor, K: torch.Tensor, V, mask = None):
-    d_k = Q.shape[-1]
-    QKT = einsum(Q, K, "... queries d_k, ... keys d_k -> ... queries keys")
-    QKT.div_(np.sqrt(d_k))
-    softmax_dim = len(QKT.shape) - 1
-    seq_length = Q.shape[-2]
+def scaled_dot_product_attention(Q, K, V, mask=None):
+    b, h, s, d = Q.shape  # batch, heads, seq_len, d_head
+    
+    # Flatten for efficient bmm
+    Q_flat = Q.reshape(b*h, s, d)
+    K_flat = K.reshape(b*h, s, d)
+    V_flat = V.reshape(b*h, s, d)
+    
+    # Use bmm directly (often faster than einsum)
+    QKT = torch.bmm(Q_flat, K_flat.transpose(-2, -1)) / math.sqrt(d)
+    
     if mask is not None:
-        result = torch.where(mask[:seq_length,:seq_length],
-        0,
-        -float('inf'))
-        A = softmax(QKT + result,dim = softmax_dim)
-    else: 
-        A = softmax(QKT,dim = softmax_dim)
-    return einsum(A, V, "... crud seq_length, ... seq_length d_v -> ... crud d_v")
+        mask_expanded = mask[:s, :s].unsqueeze(0).expand(b*h, -1, -1)
+        QKT = QKT.masked_fill(~mask_expanded, float('-inf'))
+    
+    A = torch.softmax(QKT, dim=-1)
+    result = torch.bmm(A, V_flat)
+    
+    return result.reshape(b, h, s, d)
+
+# def scaled_dot_product_attention(Q:torch.Tensor, K: torch.Tensor, V, mask = None):
+#     d_k = Q.shape[-1]
+#     QKT = einsum(Q, K, "... queries d_k, ... keys d_k -> ... queries keys")
+#     QKT.div_(np.sqrt(d_k))
+#     softmax_dim = len(QKT.shape) - 1
+#     seq_length = Q.shape[-2]
+#     if mask is not None:
+#         result = torch.where(mask[:seq_length,:seq_length],
+#         0,
+#         -float('inf'))
+#         A = softmax(QKT + result,dim = softmax_dim)
+#     else: 
+#         A = softmax(QKT,dim = softmax_dim)
+#     return einsum(A, V, "... crud seq_length, ... seq_length d_v -> ... crud d_v")
 
 class multihead_self_attention(nn.Module): 
     def __init__(self, d_model:int, num_heads:int, max_seq_length:None, theta:None, device=None, dtype=None):
