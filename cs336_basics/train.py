@@ -215,7 +215,7 @@ def main():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
 
-    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay, compile = args.compile)
     print("Weight decay", args.weight_decay)
     current_iter = 0
     ema_loss = 0
