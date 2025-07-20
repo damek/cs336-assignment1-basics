@@ -217,6 +217,7 @@ class transformer_block(nn.Module):
 class transformer_lm(nn.Module): 
     def __init__(self, d_model:int, num_heads:int, vocab_size:int, context_length: int, num_layers: int, d_ff:int = None, theta:int = None, pre_RMS = True, post_RMS = False, activation = "", device=None, dtype=None):
         super().__init__()
+        print(f"Start of transformer_lm init: {hasattr(self, '_compiled_call_impl')}")
         self.Embedding = Embedding(num_embeddings=vocab_size,embedding_dim=d_model, device=device, dtype=dtype)
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
@@ -226,6 +227,7 @@ class transformer_lm(nn.Module):
         self.output_layer = Linear(out_features=vocab_size, in_features=d_model, device=device,dtype=dtype)
         self.pre_RMS =  pre_RMS
         self.post_RMS = post_RMS
+        print(f"End of transformer_lm init: {hasattr(self, '_compiled_call_impl')}")
 
     def forward(self, X: torch.tensor):
         X = self.Embedding.forward(X)
