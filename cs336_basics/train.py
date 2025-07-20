@@ -192,12 +192,12 @@ def main():
         
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
-        @torch.compile(backend="inductor", options={"triton.cudagraphs": False})
+        @torch.compile(backend="inductor", mode="reduce-overhead")
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
             loss.backward()
             return loss
-        @torch.compile(backend="inductor",options={"triton.cudagraphs": False})
+        @torch.compile(backend="inductor", mode="reduce-overhead")
         def loss_fn(data, targets):
             model.eval()
             with torch.no_grad():
@@ -215,7 +215,7 @@ def main():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
 
-    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay, compile = args.compile)
+    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     print("Weight decay", args.weight_decay)
     current_iter = 0
     ema_loss = 0
