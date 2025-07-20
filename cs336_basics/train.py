@@ -252,6 +252,10 @@ def main():
     print("Starting training")
     
     for iter in range(current_iter, args.run_until_step):
+        if iter % 10 == 0:
+            print(f"Model compiled: {hasattr(model, '_compiled_call_impl')}")
+            print(f"training_step compiled: {hasattr(training_step, '_torchinductor_compiled_graph')}")
+            print(f"Dynamo stats: {torch._dynamo.utils.counters}")
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
 
