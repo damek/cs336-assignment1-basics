@@ -23,7 +23,8 @@ def patched_getuser():
 
 getpass.getuser = patched_getuser
 import torch
-torch.empty(1, device="cuda", requires_grad=True).backward() # prevents a bug on some systems
+if torch.cuda.is_available(): 
+    torch.empty(1, device="cuda", requires_grad=True).backward() # prevents a bug on some systems, stolen from the modded nano gpt repo.
 import math
 import transformer, optimization, tokenizer_utils
 import numpy as np
