@@ -18,7 +18,7 @@ def adamw_step_inductor(compile = False):
         pdata.mul_(1-lambda_wd)
 
     if compile:
-        return torch.compile(step_impl,options={"triton.cudagraphs": False})
+        return torch.compile(step_impl,mode = "reduce-overhead")
     else:
         return step_impl
     
