@@ -190,6 +190,7 @@ def main():
 
     model = transformer.transformer_lm(vocab_size=args.vocab_size,d_ff=args.d_ff, d_model=args.d_model, num_heads=args.num_heads, num_layers=args.num_layers, context_length=args.context_length, theta=args.rope_theta_parameter, device=args.device, pre_RMS=args.pre_RMS, post_RMS=args.post_RMS, activation=args.activation)
     model.to(args.device)
+    print("HELLLLLO")
     print(f"Fresh model compiled: {hasattr(model, '_compiled_call_impl')}")
 
 
@@ -274,10 +275,6 @@ def main():
     print("Starting training")
     
     for iter in range(current_iter, args.run_until_step):
-        if iter % 10 == 0:
-            print(f"Model compiled: {hasattr(model, '_compiled_call_impl')}")
-            print(f"training_step compiled: {hasattr(training_step, '_torchinductor_compiled_graph')}")
-            print(f"Dynamo stats: {torch._dynamo.utils.counters}")
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
 
