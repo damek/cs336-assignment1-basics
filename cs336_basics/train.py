@@ -153,6 +153,9 @@ def save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, b
 def main():
     # Add this early in main() before model creation:
     torch._dynamo.reset()  # Clear all compilation cache
+    if 'model' in locals():
+        print("Deleting model")
+        del model
 
     cfg, _ = configs.load_cfg() 
     group=cfg.__class__.__name__ 
