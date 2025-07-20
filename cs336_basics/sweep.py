@@ -101,7 +101,6 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    lr_scheduler=args.lr_scheduler,
                    grad_clip=grad_clip, 
                    compile=args.compile,
-                   num_layers=num_layer,
                    time_limit_hours=args.time_limit_hours)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
