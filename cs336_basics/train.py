@@ -175,7 +175,6 @@ def main():
     print("device", args.device)
     model = transformer.transformer_lm(vocab_size=args.vocab_size,d_ff=args.d_ff, d_model=args.d_model, num_heads=args.num_heads, num_layers=args.num_layers, context_length=args.context_length, theta=args.rope_theta_parameter, device=args.device, pre_RMS=args.pre_RMS, post_RMS=args.post_RMS, activation=args.activation)
     model.to(args.device)
-    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     # # Compile model (note this changes the names of params to include _orig..., so you need to compile again before loading the checkpoint).
     # Note that compile misbehaves on mps. 
     if args.compile and args.device == "cuda":
@@ -204,7 +203,7 @@ def main():
             with torch.no_grad():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
-
+        
     else: 
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
@@ -216,6 +215,7 @@ def main():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
 
+    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay, compile = args.compile)
     print("Weight decay", args.weight_decay)
     current_iter = 0
     ema_loss = 0
