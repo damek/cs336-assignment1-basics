@@ -51,6 +51,7 @@ p.add_argument("--num_layers", type=int, nargs="+", default=[4])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 p.add_argument("--resume_from", type=str, default=None)
 p.add_argument("--compile", type=str, default=False)
+p.add_argument("--time_limit_hours", type=float, nargs="+", default=None)
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
@@ -100,7 +101,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    lr_scheduler=args.lr_scheduler,
                    grad_clip=grad_clip, 
                    compile=args.compile,
-                   num_layers=num_layers)
+                   num_layers=num_layer,
+                   time_limit_hours=args.time_limit_hours)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(

@@ -129,6 +129,24 @@ def eval(windowed_validation : torch.Tensor, loss_fn, args):
 
     return loss/total_tokens
 
+
+def save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, best_validation_loss, ema_loss, model, optimizer):
+    print("Validating")
+    # model.eval()
+    valid_loss = eval(windowed_validation, loss_fn, args)
+    # model.train()
+    wandb.log({
+    "Validation loss": valid_loss,
+    "wall_time"      : time_total,       
+    }, step=iter)
+
+    print("Iteration:", iter, "validation loss:", valid_loss)
+    if valid_loss < best_validation_loss:
+        best_validation_loss = valid_loss
+    ckpt_path = pathlib.Path(f"{args.checkpoint_path}ckpt_best.pt")
+    ckpt_path.parent.mkdir(parents=True, exist_ok=True)   
+    optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = valid_loss)  
+
 def main():
     cfg, _ = configs.load_cfg() 
     group=cfg.__class__.__name__ 
@@ -222,7 +240,7 @@ def main():
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
 
-
+    print("Starting training")
     
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
@@ -240,6 +258,10 @@ def main():
         ema_loss = (1-lambda_ema) * loss.detach() + lambda_ema*ema_loss
         time_end = time.perf_counter()  
         time_total += time_end - time_start
+        if args.time_limit_hours is not None and time_total > args.time_limit_hours * 3600:
+            print(f"Time limit reached {time_total/3600} hours, stopping training")
+            save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, best_validation_loss, ema_loss, model, optimizer)
+            break
         if iter % args.print_every == 0:
             print(f"Iteration: {iter}, ema loss {ema_loss}, lr {optimizer.param_groups[0]['lr']}")
             wandb.log({
@@ -252,21 +274,8 @@ def main():
 
 
         if args.validation_every != None and (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
-            print("Validating")
-            # model.eval()
-            valid_loss = eval(windowed_validation, loss_fn, args)
-            # model.train()
-            wandb.log({
-            "Validation loss": valid_loss,
-            "wall_time"      : time_total,       
-            }, step=iter)
+            save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, best_validation_loss, ema_loss, model, optimizer)
 
-            print("Iteration:", iter, "validation loss:", valid_loss)
-            if valid_loss < best_validation_loss:
-                best_validation_loss = valid_loss
-            ckpt_path = pathlib.Path(f"{args.checkpoint_path}ckpt_best.pt")
-            ckpt_path.parent.mkdir(parents=True, exist_ok=True)   
-            optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = valid_loss)
 
         
         if (args.save_freq != None and (iter) % args.save_freq == 0): 
