@@ -193,7 +193,7 @@ def main():
         
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
-        @torch.compile(backend="inductor", mode="reduce-overhead")
+        @torch.compile(backend="inductor", mode="default")
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
             loss.backward()
