@@ -8,7 +8,7 @@ import typing
 
 import torch.optim.optimizer
 
-def adamw_step_inductor(self, compile = False):
+def adamw_step_inductor(compile = False):
     
     def step_impl(m, v, beta_1, beta_2, lr, eps, lambda_wd, p, grad, t):
         m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
@@ -40,7 +40,7 @@ class AdamW(torch.optim.Optimizer):
         for group in self.param_groups:
             group['lr'] = lr
         
-        self.step = adamw_step_inductor(self, compile = compile)
+        self.one_step = adamw_step_inductor(compile = compile)
 
     def step(self, closure: Optional[Callable] = None):
         loss = None if closure is None else closure()
@@ -66,7 +66,7 @@ class AdamW(torch.optim.Optimizer):
                 t = state['t']
                 grad = p.grad
 
-                step_impl = self.step(m, v, beta_1, beta_2, lr, eps, lambda_wd, p, grad, t)
+                step_impl = self.one_step(m, v, beta_1, beta_2, lr, eps, lambda_wd, p, grad, t)
 
                 # # m = beta_1*m + (1-beta_1)*grad
                 # m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
