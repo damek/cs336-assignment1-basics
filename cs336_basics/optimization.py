@@ -10,16 +10,16 @@ import torch.optim.optimizer
 
 def adamw_step_inductor(compile = False):
     
-    def step_impl(m, v, beta_1, beta_2, lr, eps, lambda_wd, p, grad, t):
+    def step_impl(m, v, beta_1, beta_2, lr, eps, lambda_wd, pdata, grad, t):
         m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
         # v = beta_2*v + (1-beta_2)*grad.square()
         v.mul_(beta_2).addcmul_(grad, grad, value = 1-beta_2)
         alpha_t = lr*math.sqrt(1-math.pow(beta_2,t))/(1-math.pow(beta_1, t))
         # p.data -= alpha_t * m.div(v.sqrt() + eps)
         denom = v.sqrt().add(eps)
-        p.data.addcdiv_(m, denom, value = -alpha_t)
+        pdata.addcdiv_(m, denom, value = -alpha_t)
         # p.data -= lr*lambda_wd*p.data
-        p.data.mul_(1-lr*lambda_wd)
+        pdata.mul_(1-lr*lambda_wd)
 
     if compile:
         return torch.compile(step_impl, mode="reduce-overhead")
