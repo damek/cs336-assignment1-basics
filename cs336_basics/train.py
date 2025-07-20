@@ -6,6 +6,8 @@ import sys
 os.environ['TORCHINDUCTOR_CACHE_DIR'] = '/tmp/torchinductor_cache'
 os.environ['TORCH_HOME'] = '/tmp/torch_cache'
 os.environ['XDG_CACHE_HOME'] = '/tmp/cache'
+os.environ['TORCH_COMPILE_DISABLE_CUDAGRAPHS'] = '1'
+
 
 # Create directories
 os.makedirs('/tmp/torchinductor_cache', exist_ok=True)
@@ -183,7 +185,7 @@ def main():
 
         config.triton.cudagraphs = False
         torch._inductor.config.triton.cudagraphs = False
-        
+
         config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
         torch.set_float32_matmul_precision('high')
