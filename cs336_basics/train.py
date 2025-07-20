@@ -182,6 +182,7 @@ def main():
         import torch._inductor.config as config
         config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
+        config.triton.cudagraphs = False
         torch.set_float32_matmul_precision('high')
         
         # torch.backends.cudnn.benchmark = True            # Optimize for fixed input sizes
