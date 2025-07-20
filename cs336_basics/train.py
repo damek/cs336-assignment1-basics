@@ -6,8 +6,6 @@ import sys
 os.environ['TORCHINDUCTOR_CACHE_DIR'] = '/tmp/torchinductor_cache'
 os.environ['TORCH_HOME'] = '/tmp/torch_cache'
 os.environ['XDG_CACHE_HOME'] = '/tmp/cache'
-os.environ['TORCH_COMPILE_DISABLE_CUDAGRAPHS'] = '1'
-
 
 # Create directories
 os.makedirs('/tmp/torchinductor_cache', exist_ok=True)
@@ -151,13 +149,6 @@ def save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, b
     optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = valid_loss)  
 
 def main():
-    # Add this early in main() before model creation:
-    torch._dynamo.config.disable = True
-    torch._dynamo.reset()
-    if 'model' in locals():
-        print("Deleting model")
-        del model
-
     cfg, _ = configs.load_cfg() 
     group=cfg.__class__.__name__ 
     purpose = cfg.wandb_project + "_" + cfg.wandb_base_name.split()[0]
@@ -168,7 +159,6 @@ def main():
     run_dir   = pathlib.Path(f"checkpoints/{purpose}")
     cfg.checkpoint_path = str(run_dir) + "/"   # ensure trailing slash
     args = cfg
-
     run = wandb.init(project=args.wandb_project, group=group, name=timestamped_name, config=args)
     wandb.run.log_code(".")
     print("Training with args", args)
@@ -176,7 +166,6 @@ def main():
     validation = torch.as_tensor(np.memmap(args.val_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     args.valid_size = validation.size
     windowed_validation = validation.unfold(0, args.context_length + 1, args.context_length)
-
     if args.device == "cuda" and torch.cuda.is_available():
         args.device = "cuda"
     elif args.device == "mps" and torch.backends.mps.is_available():
@@ -184,44 +173,25 @@ def main():
     else:
         args.device = "cpu"
     print("device", args.device)
-    args.compile = False  # Force it to boolean False
-    print(f"Hardcoded compile: {args.compile} (type: {type(args.compile)})")
-
-
     model = transformer.transformer_lm(vocab_size=args.vocab_size,d_ff=args.d_ff, d_model=args.d_model, num_heads=args.num_heads, num_layers=args.num_layers, context_length=args.context_length, theta=args.rope_theta_parameter, device=args.device, pre_RMS=args.pre_RMS, post_RMS=args.post_RMS, activation=args.activation)
     model.to(args.device)
-    print("HELLLLLO")
-    print(f"Fresh model compiled: {hasattr(model, '_compiled_call_impl')}")
-
 
     # # Compile model (note this changes the names of params to include _orig..., so you need to compile again before loading the checkpoint).
     # Note that compile misbehaves on mps. 
     if args.compile and args.device == "cuda":
         import torch._inductor.config as config
-
-        config.triton.cudagraphs = False
-        torch._inductor.config.triton.cudagraphs = False
-
         config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
-        torch.set_float32_matmul_precision('high')
+        torch.set_float32_matmul_precision('medium')
         
         # torch.backends.cudnn.benchmark = True            # Optimize for fixed input sizes
         # These are the attributes that actually exist:
         if hasattr(config, 'triton'):
             if hasattr(config.triton, 'autotune_pointwise'):
                 config.triton.autotune_pointwise = False
-                
-        print(f"args.compile = {args.compile}")
-        print(f"args.device = {args.device}")
-        print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
-        print(f"args.compile = {repr(args.compile)} (type: {type(args.t)})")
-        print(f"args.device = {repr(args.device)} (type: {type(args.device)})")
-        print(f"device comparison: {args.device == 'cuda'}")
-        print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
-
+        
         backend = "inductor"
-        # model = torch.model, backend=backend, mode="reduce-overhead")
+        # model = torch.compile(model, backend=backend, mode="reduce-overhead")
         @torch.compile(backend="inductor", mode="reduce-overhead")
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
@@ -267,7 +237,7 @@ def main():
     #     args.validation_every = 100
 
     lambda_ema = .98
-    # wandb.watch(model, log="all", log_freq=100)
+    wandb.watch(model, log="all", log_freq=100)
     time_total = 0
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
