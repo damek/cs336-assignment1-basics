@@ -87,7 +87,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
         cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_final_iter": cosine_cycle_final_iter}
     else:
         cosine_decay = None
-
+    print(f"num_heads: {num_heads}, num_layers: {num_layers}")
     cfg = CfgClass(lr=lr,
                    batch_size=bs,
                    run_until_step=args.run_until_step,
@@ -103,7 +103,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    grad_clip=grad_clip, 
                    compile=args.compile,
                    time_limit_hours=args.time_limit_hours,
-                   num_heads=num_heads)
+                   num_heads=num_heads,
+                   num_layers=num_layers)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
