@@ -204,7 +204,7 @@ def main():
             with torch.no_grad():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
-        optimizer.step = torch.compile(optimizer.step, mode="reduce-overhead")
+
     else: 
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)

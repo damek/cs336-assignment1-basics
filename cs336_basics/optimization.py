@@ -8,9 +8,28 @@ import typing
 
 import torch.optim.optimizer
 
+def adamw_step_inductor(self, compile = False):
+    
+    def step_impl(m, v, beta_1, beta_2, lr, eps, lambda_wd, p, grad, t):
+        m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
+        # v = beta_2*v + (1-beta_2)*grad.square()
+        v.mul_(beta_2).addcmul_(grad, grad, value = 1-beta_2)
+        alpha_t = lr*math.sqrt(1-math.pow(beta_2,t))/(1-math.pow(beta_1, t))
+        # p.data -= alpha_t * m.div(v.sqrt() + eps)
+        denom = v.sqrt().add(eps)
+        p.data.addcdiv_(m, denom, value = -alpha_t)
+        # p.data -= lr*lambda_wd*p.data
+        p.data.mul_(1-lr*lambda_wd)
+
+    if compile:
+        return torch.compile(step_impl, mode="reduce-overhead")
+    else:
+        return step_impl
+    
+
 class AdamW(torch.optim.Optimizer):
 
-    def __init__(self, params, lr = 1e-3, betas = (.9, .999), eps = 1e-8, weight_decay = 1e-2):
+    def __init__(self, params, lr = 1e-3, betas = (.9, .999), eps = 1e-8, weight_decay = 1e-2, compile = False):
         if lr < 0 or betas[0] < 0 or betas[1] < 0 or weight_decay < 0 or eps < 0:
             raise ValueError(f"Invalid, negatove hyperparam") 
         defaults = {'lr' : lr, 'betas' : betas, 'eps' : eps, 'lambda_wd' : weight_decay}
@@ -20,6 +39,8 @@ class AdamW(torch.optim.Optimizer):
         """Update learning rate for all parameter groups"""
         for group in self.param_groups:
             group['lr'] = lr
+        
+        self.step = adamw_step_inductor(self, compile = compile)
 
     def step(self, closure: Optional[Callable] = None):
         loss = None if closure is None else closure()
@@ -45,16 +66,18 @@ class AdamW(torch.optim.Optimizer):
                 t = state['t']
                 grad = p.grad
 
-                # m = beta_1*m + (1-beta_1)*grad
-                m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
-                # v = beta_2*v + (1-beta_2)*grad.square()
-                v.mul_(beta_2).addcmul_(grad, grad, value = 1-beta_2)
-                alpha_t = lr*math.sqrt(1-math.pow(beta_2,t))/(1-math.pow(beta_1, t))
-                # p.data -= alpha_t * m.div(v.sqrt() + eps)
-                denom = v.sqrt().add(eps)
-                p.data.addcdiv_(m, denom, value = -alpha_t)
-                # p.data -= lr*lambda_wd*p.data
-                p.data.mul_(1-lr*lambda_wd)
+                step_impl = self.step(m, v, beta_1, beta_2, lr, eps, lambda_wd, p, grad, t)
+
+                # # m = beta_1*m + (1-beta_1)*grad
+                # m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
+                # # v = beta_2*v + (1-beta_2)*grad.square()
+                # v.mul_(beta_2).addcmul_(grad, grad, value = 1-beta_2)
+                # alpha_t = lr*math.sqrt(1-math.pow(beta_2,t))/(1-math.pow(beta_1, t))
+                # # p.data -= alpha_t * m.div(v.sqrt() + eps)
+                # denom = v.sqrt().add(eps)
+                # p.data.addcdiv_(m, denom, value = -alpha_t)
+                # # p.data -= lr*lambda_wd*p.data
+                # p.data.mul_(1-lr*lambda_wd)
 
                 state['m'] = m
                 state['v'] = v
