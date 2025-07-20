@@ -258,7 +258,12 @@ def main():
         ema_loss = (1-lambda_ema) * loss.detach() + lambda_ema*ema_loss
         time_end = time.perf_counter()  
         time_total += time_end - time_start
-        if args.time_limit_hours is not None and time_total > args.time_limit_hours * 3600:
+
+        time_limit_hours = args.time_limit_hours
+        if isinstance(time_limit_hours, list):
+            time_limit_hours = time_limit_hours[0]
+            
+        if time_limit_hours is not None and time_total > time_limit_hours * 3600:
             print(f"Time limit reached {time_total/3600} hours, stopping training")
             save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, best_validation_loss, ema_loss, model, optimizer)
             break
