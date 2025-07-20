@@ -35,6 +35,21 @@ import pstats
 
 
 
+def create_data_batches(train_tensor, batch_size, context_length, num_batches=5000):
+    """Pre-create batches for H100 to eliminate data loading overhead"""
+    print(f"Pre-creating {num_batches} batches for H100...")
+    batches = []
+    for i in range(num_batches):
+        if i % 1000 == 0:
+            print(f"  Created {i}/{num_batches} batches...")
+        data, targets = tokenizer_utils.data_from_gpu_tensor(
+            train_tensor, batch_size, context_length
+        )
+        batches.append((data, targets))
+    return batches
+
+
+
 def log_layerwise_adamw_updates(optimizer, model, step, log_freq=100):
     """Log per-layer histograms of AdamW update directions: m/(sqrt(v) + eps)"""
     if step % log_freq != 0:
@@ -182,6 +197,7 @@ def main():
         config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
         torch.set_float32_matmul_precision('high')
+        
         # torch.backends.cudnn.benchmark = True            # Optimize for fixed input sizes
         # These are the attributes that actually exist:
         if hasattr(config, 'triton'):
@@ -217,6 +233,7 @@ def main():
     current_iter = 0
     ema_loss = 0
     best_validation_loss = float('inf')
+    
     if args.resume_from != None: 
         model, optimizer, current_iter, args_old, ema_loss, best_validation_loss = optimization.load_checkpoint(src=args.resume_from, model=model, optimizer=optimizer)
         print(f"Loading from checkpoint: iteration {current_iter}, ema_loss {ema_loss}, best_validation_loss {best_validation_loss}")
@@ -241,10 +258,15 @@ def main():
     print("print_every", args.print_every)
 
     print("Starting training")
+    print("Pre-creating training batches for H100...")
+    prebatched_data = create_data_batches(train, args.batch_size, args.context_length, args.run_until_step)
+    batch_idx = 0
     
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
-        data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
+        data, targets = prebatched_data[batch_idx % len(prebatched_data)]
+        batch_idx += 1
+        # data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
 
         if args.lr_scheduler == "cosine":
             optimizer.set_lr(optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
