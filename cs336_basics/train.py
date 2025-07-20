@@ -151,6 +151,9 @@ def save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, b
     optimization.save_checkpoint(model=model, optimizer=optimizer, iteration = iter, out=ckpt_path, args=args, ema_loss=ema_loss, valid_loss = valid_loss)  
 
 def main():
+    # Add this early in main() before model creation:
+    torch._dynamo.reset()  # Clear all compilation cache
+
     cfg, _ = configs.load_cfg() 
     group=cfg.__class__.__name__ 
     purpose = cfg.wandb_project + "_" + cfg.wandb_base_name.split()[0]
