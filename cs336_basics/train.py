@@ -164,6 +164,7 @@ def main():
     run_dir   = pathlib.Path(f"checkpoints/{purpose}")
     cfg.checkpoint_path = str(run_dir) + "/"   # ensure trailing slash
     args = cfg
+
     run = wandb.init(project=args.wandb_project, group=group, name=timestamped_name, config=args)
     wandb.run.log_code(".")
     print("Training with args", args)
@@ -171,6 +172,7 @@ def main():
     validation = torch.as_tensor(np.memmap(args.val_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     args.valid_size = validation.size
     windowed_validation = validation.unfold(0, args.context_length + 1, args.context_length)
+
     if args.device == "cuda" and torch.cuda.is_available():
         args.device = "cuda"
     elif args.device == "mps" and torch.backends.mps.is_available():
@@ -178,6 +180,7 @@ def main():
     else:
         args.device = "cpu"
     print("device", args.device)
+
     model = transformer.transformer_lm(vocab_size=args.vocab_size,d_ff=args.d_ff, d_model=args.d_model, num_heads=args.num_heads, num_layers=args.num_layers, context_length=args.context_length, theta=args.rope_theta_parameter, device=args.device, pre_RMS=args.pre_RMS, post_RMS=args.post_RMS, activation=args.activation)
     model.to(args.device)
 
@@ -199,7 +202,15 @@ def main():
             if hasattr(config.triton, 'autotune_pointwise'):
                 config.triton.autotune_pointwise = False
                 
-        
+        print(f"args.compile = {args.compile}")
+        print(f"args.device = {args.device}")
+        print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
+        print(f"torch.cuda.is_available() = {torch.cuda.is_available()}")
+        print(f"torch.backends.cuda.is_available() = {torch.backends.cuda.is_available()}")
+        print(f"torch.backends.cuda.matmul.allow_tf32 = {torch.backends.cuda.matmul.allow_tf32}")
+        print(f"torch.backends.cudnn.allow_tf32 = {torch.backends.cudnn.allow_tf32}")
+        print(f"torch.backends.cudnn.benchmark = {torch.backends.cudnn.benchmark}")
+        print(f"torch.backends.cudnn.deterministic = {torch.backends.cudnn.deterministic}")
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
         @torch.compile(backend="inductor", mode="reduce-overhead")
