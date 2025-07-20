@@ -63,7 +63,7 @@ class AdamW(torch.optim.Optimizer):
                 t = state['t']
                 grad = p.grad
                 alpha_t = lr * math.sqrt(1 - math.pow(beta_2, t)) / (1 - math.pow(beta_1, t))
-                self.one_step(m, v, beta_1, beta_2, alpha_t, eps, lambda_wd, p.data, grad)
+                self.one_step(m, v, beta_1, beta_2, alpha_t, eps, lambda_wd, p.data, grad, lr)
 
                 # # m = beta_1*m + (1-beta_1)*grad
                 # m.mul_(beta_1).add_(grad, alpha = 1-beta_1)
