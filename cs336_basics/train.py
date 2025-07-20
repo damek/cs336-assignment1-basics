@@ -205,12 +205,7 @@ def main():
         print(f"args.compile = {args.compile}")
         print(f"args.device = {args.device}")
         print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
-        print(f"torch.cuda.is_available() = {torch.cuda.is_available()}")
-        print(f"torch.backends.cuda.is_available() = {torch.backends.cuda.is_available()}")
-        print(f"torch.backends.cuda.matmul.allow_tf32 = {torch.backends.cuda.matmul.allow_tf32}")
-        print(f"torch.backends.cudnn.allow_tf32 = {torch.backends.cudnn.allow_tf32}")
-        print(f"torch.backends.cudnn.benchmark = {torch.backends.cudnn.benchmark}")
-        print(f"torch.backends.cudnn.deterministic = {torch.backends.cudnn.deterministic}")
+
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
         @torch.compile(backend="inductor", mode="reduce-overhead")
