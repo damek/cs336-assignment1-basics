@@ -190,6 +190,8 @@ def main():
 
     model = transformer.transformer_lm(vocab_size=args.vocab_size,d_ff=args.d_ff, d_model=args.d_model, num_heads=args.num_heads, num_layers=args.num_layers, context_length=args.context_length, theta=args.rope_theta_parameter, device=args.device, pre_RMS=args.pre_RMS, post_RMS=args.post_RMS, activation=args.activation)
     model.to(args.device)
+    print(f"Fresh model compiled: {hasattr(model, '_compiled_call_impl')}")
+
 
     # # Compile model (note this changes the names of params to include _orig..., so you need to compile again before loading the checkpoint).
     # Note that compile misbehaves on mps. 
@@ -212,13 +214,13 @@ def main():
         print(f"args.compile = {args.compile}")
         print(f"args.device = {args.device}")
         print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
-        print(f"args.compile = {repr(args.compile)} (type: {type(args.compile)})")
+        print(f"args.compile = {repr(args.compile)} (type: {type(args.t)})")
         print(f"args.device = {repr(args.device)} (type: {type(args.device)})")
         print(f"device comparison: {args.device == 'cuda'}")
         print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
 
         backend = "inductor"
-        # model = torch.compile(model, backend=backend, mode="reduce-overhead")
+        # model = torch.model, backend=backend, mode="reduce-overhead")
         @torch.compile(backend="inductor", mode="reduce-overhead")
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
@@ -264,7 +266,7 @@ def main():
     #     args.validation_every = 100
 
     lambda_ema = .98
-    wandb.watch(model, log="all", log_freq=100)
+    # wandb.watch(model, log="all", log_freq=100)
     time_total = 0
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
