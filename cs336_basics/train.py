@@ -179,6 +179,7 @@ def main():
             return loss
         @torch.compile(backend="inductor", mode="reduce-overhead")
         def loss_fn(data, targets):
+            model.eval()
             with torch.no_grad():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
@@ -188,6 +189,7 @@ def main():
             loss.backward()
             return loss
         def loss_fn(data, targets):
+            model.eval()
             with torch.no_grad():
                 loss = transformer.cross_entropy(model.forward(data), targets)
             return loss
@@ -251,9 +253,9 @@ def main():
 
         if args.validation_every != None and (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
             print("Validating")
-            model.eval()
+            # model.eval()
             valid_loss = eval(windowed_validation, loss_fn, args)
-            model.train()
+            # model.train()
             wandb.log({
             "Validation loss": valid_loss,
             "wall_time"      : time_total,       
