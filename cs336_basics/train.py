@@ -182,6 +182,7 @@ def main():
         import torch._inductor.config as config
         config.max_autotune = False
         config.force_disable_caches = False  # Keep caching for speed
+        config.max_autotune = True
         torch.set_float32_matmul_precision('high')
         
         # torch.backends.cudnn.benchmark = True            # Optimize for fixed input sizes
@@ -192,7 +193,7 @@ def main():
         
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
-        @torch.compile(backend="inductor", mode="reduce-overhead")
+        @torch.compile(backend="inductor", mode="max-autotune")
         def training_step(model, data, targets):
             loss = transformer.cross_entropy(model.forward(data), targets)
             loss.backward()
