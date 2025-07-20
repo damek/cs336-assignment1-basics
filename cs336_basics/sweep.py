@@ -48,6 +48,7 @@ p.add_argument("--weight_decay", type=float, nargs="+", default=[1e-2])
 p.add_argument("--d_model", type=int, nargs="+", default=[512])
 p.add_argument("--context_length", type=int, nargs="+", default=[256])
 p.add_argument("--num_layers", type=int, nargs="+", default=[4])
+p.add_argument("--num_heads", type=int, nargs="+", default=[8])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 p.add_argument("--resume_from", type=str, default=None)
 p.add_argument("--compile", type=lambda x: x.lower() == 'true', default=False)
@@ -101,7 +102,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    lr_scheduler=args.lr_scheduler,
                    grad_clip=grad_clip, 
                    compile=args.compile,
-                   time_limit_hours=args.time_limit_hours)
+                   time_limit_hours=args.time_limit_hours,
+                   num_heads=args.num_heads)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
