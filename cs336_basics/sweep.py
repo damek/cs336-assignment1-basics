@@ -50,7 +50,7 @@ p.add_argument("--context_length", type=int, nargs="+", default=[256])
 p.add_argument("--num_layers", type=int, nargs="+", default=[4])
 p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 p.add_argument("--resume_from", type=str, default=None)
-p.add_argument("--compile", type=str, default=False)
+p.add_argument("--compile", type=bool, default=False)
 p.add_argument("--time_limit_hours", type=float, nargs="+", default=None)
 args = p.parse_args()
 
