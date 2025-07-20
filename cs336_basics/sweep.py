@@ -69,7 +69,7 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
 
-for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip, num_layers in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip, args.num_layers):
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip, num_layers, num_heads in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip, args.num_layers, args.num_heads):
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
@@ -103,7 +103,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    grad_clip=grad_clip, 
                    compile=args.compile,
                    time_limit_hours=args.time_limit_hours,
-                   num_heads=args.num_heads)
+                   num_heads=num_heads)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
