@@ -212,6 +212,10 @@ def main():
         print(f"args.compile = {args.compile}")
         print(f"args.device = {args.device}")
         print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
+        print(f"args.compile = {repr(args.compile)} (type: {type(args.compile)})")
+        print(f"args.device = {repr(args.device)} (type: {type(args.device)})")
+        print(f"device comparison: {args.device == 'cuda'}")
+        print(f"Will enter compilation block: {args.compile and args.device == 'cuda'}")
 
         backend = "inductor"
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
