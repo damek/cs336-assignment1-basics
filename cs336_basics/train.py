@@ -201,7 +201,7 @@ def main():
         model, optimizer, current_iter, args_old, ema_loss, best_validation_loss = optimization.load_checkpoint(src=args.resume_from, model=model, optimizer=optimizer)
         print(f"Loading from checkpoint: iteration {current_iter}, ema_loss {ema_loss}, best_validation_loss {best_validation_loss}")
         # Test with a tiny subset first
-        model.eval()
+        # model.eval()
     if ema_loss == None:
         ema_loss = 0
     if args.lr_scheduler == "cosine":
@@ -251,7 +251,9 @@ def main():
 
         if args.validation_every != None and (iter+1) % args.validation_every == 0 or (iter == args.run_until_step - 1 and args.validation_every != None):  
             print("Validating")
+            model.eval()
             valid_loss = eval(windowed_validation, loss_fn, args)
+            model.train()
             wandb.log({
             "Validation loss": valid_loss,
             "wall_time"      : time_total,       
