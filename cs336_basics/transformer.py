@@ -218,14 +218,14 @@ class transformer_lm(nn.Module):
     def __init__(self, d_model:int, num_heads:int, vocab_size:int, context_length: int, num_layers: int, d_ff:int = None, theta:int = None, pre_RMS = True, post_RMS = False, activation = "", device=None, dtype=None):
         super().__init__()
         self.Embedding = Embedding(num_embeddings=vocab_size,embedding_dim=d_model, device=device, dtype=dtype)
-        self.Embedding.param.data.mul_(10)
+        # self.Embedding.param.data.mul_(10)
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
             TB = transformer_block(d_model=d_model, num_heads=num_heads, d_ff=d_ff, max_seq_length=context_length, theta=theta, device=device,dtype=dtype, pre_RMS = pre_RMS, post_RMS = post_RMS, activation = activation)
             self.layers.append(TB)
         self.final_RMSNorm = RMSNorm(d_model=d_model, device=device,dtype=dtype)
         self.output_layer = Linear(out_features=vocab_size, in_features=d_model, device=device,dtype=dtype)
-        self.output_layer.param.data.div_(10)
+        self.output_layer.param.data.div_(np.sqrt(vocab_size + d_model))
         self.pre_RMS =  pre_RMS
         self.post_RMS = post_RMS
 
