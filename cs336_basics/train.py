@@ -262,6 +262,13 @@ def main():
         with torch.no_grad():
             # set learning rate of the output layer to be d_model*lr
             optimizer.param_groups[0]["lr"] = args.d_model*optimizer.param_groups[0]["lr"]
+            # how can we tell this is the output layer?
+            # we can check if the param is the output layer by checking if the param is the last one in the model
+            if id(model.output_layer.param) == id(optimizer.param_groups[0]["params"][-1]):
+                print("This is the output layer")
+            else:
+                print("This is not the output layer")
+
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
         optimizer.step()
