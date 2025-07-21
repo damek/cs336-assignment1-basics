@@ -271,8 +271,8 @@ def main():
         if args.lr_scheduler == "cosine":
             for group in optimizer.param_groups:
                 group["lr"] = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
-                with torch.no_grad():
-                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
+            with torch.no_grad():
+                optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
 
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
