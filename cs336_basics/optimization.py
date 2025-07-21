@@ -41,7 +41,6 @@ class AdamW(torch.optim.Optimizer):
 
     def step(self, closure: Optional[Callable] = None):
         loss = None if closure is None else closure()
-        print("number of param groups", len(self.param_groups))
         for group in self.param_groups:
             lr = group['lr'] 
             beta_1, beta_2 = group['betas']
