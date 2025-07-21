@@ -231,7 +231,7 @@ def main():
         }
     ]
 
-    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    optimizer = optimization.AdamW(param_groups, betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(model.parameters(), weight_decay=args.weight_decay, momentum=.95)
     print("Weight decay", args.weight_decay)
     current_iter = 0
