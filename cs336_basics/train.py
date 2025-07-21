@@ -219,7 +219,7 @@ def main():
     param_groups = [
         {
             'params': [model.Embedding.param],  
-            'lr': args.d_model*args.lr
+            'lr': 0
         },
         {
             'params': [
@@ -227,7 +227,7 @@ def main():
                 *model.final_RMSNorm.parameters(),
                 model.output_layer.param
             ],
-            'lr': args.lr
+            'lr': 0
         }
     ]
 
