@@ -271,14 +271,12 @@ def main():
         if args.lr_scheduler == "cosine":
             for group in optimizer.param_groups:
                 group["lr"] = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
+                with torch.no_grad():
+                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
 
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
-        with torch.no_grad():
-            # set learning rate of the output layer to be d_model*lr
-            # optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
-            print("Verifying that the first element of param groups is the output layer")
-            print(optimizer.param_groups[0]["params"][0] == model.output_layer.param)
+
 
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
