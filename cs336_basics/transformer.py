@@ -225,7 +225,7 @@ class transformer_lm(nn.Module):
             self.layers.append(TB)
         self.final_RMSNorm = RMSNorm(d_model=d_model, device=device,dtype=dtype)
         self.output_layer = Linear(out_features=vocab_size, in_features=d_model, device=device,dtype=dtype)
-        self.output_layer.param.data.div_(np.sqrt(vocab_size + d_model))
+        self.output_layer.param.data.div_(np.sqrt(vocab_size + d_model)) # muP?
         self.pre_RMS =  pre_RMS
         self.post_RMS = post_RMS
 

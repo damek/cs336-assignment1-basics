@@ -255,6 +255,7 @@ def main():
 
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
+        model.output_layer.param.grad.data.mul_(args.d_model) # mup?
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
         optimizer.step()
