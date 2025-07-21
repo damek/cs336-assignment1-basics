@@ -260,9 +260,8 @@ def main():
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
         with torch.no_grad():
-            print("output_layer.param.grad.data.norm() before", model.output_layer.param.grad.data.norm())
-            model.output_layer.param.grad.data.mul_(iter*args.d_model) # mup?
-            print("output_layer.param.grad.data.norm() after", model.output_layer.param.grad.data.norm())
+            # set learning rate of the output layer to be d_model*lr
+            optimizer.param_groups[0]["lr"] = args.d_model*optimizer.param_groups[0]["lr"]
         if args.grad_clip is not None:
             optimization.gradient_clipping(model.parameters(), args.grad_clip)
         optimizer.step()
