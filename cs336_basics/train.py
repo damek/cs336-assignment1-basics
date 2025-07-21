@@ -195,25 +195,25 @@ def main():
         # model = torch.compile(model, backend=backend, mode="reduce-overhead")
         @torch.compile(backend="inductor", mode="reduce-overhead")
         def training_step(model, data, targets):
-            loss = transformer.cross_entropy(model.forward(data), targets)
+            loss = transformer.cross_entropy(model(data), targets)
             loss.backward()
             return loss
         @torch.compile(backend="inductor", mode="reduce-overhead")
         def loss_fn(data, targets):
             model.eval()
             with torch.no_grad():
-                loss = transformer.cross_entropy(model.forward(data), targets)
+                loss = transformer.cross_entropy(model(data), targets)
             return loss
         
     else: 
         def training_step(model, data, targets):
-            loss = transformer.cross_entropy(model.forward(data), targets)
+            loss = transformer.cross_entropy(model(data), targets)
             loss.backward()
             return loss
         def loss_fn(data, targets):
             model.eval()
             with torch.no_grad():
-                loss = transformer.cross_entropy(model.forward(data), targets)
+                loss = transformer.cross_entropy(model(data), targets)
             return loss
 
     optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
