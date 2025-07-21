@@ -216,7 +216,8 @@ def main():
                 loss = transformer.cross_entropy(model(data), targets)
             return loss
 
-    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    # optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, momentum=.95)
     print("Weight decay", args.weight_decay)
     current_iter = 0
     ema_loss = 0
@@ -230,10 +231,12 @@ def main():
         ema_loss = 0
     if args.lr_scheduler == "cosine":
         print("Using cosine learning rate scheduler")
-        optimizer.set_lr(optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
+        for group in optimizer.param_groups:
+            group["lr"] = optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
     else: 
         print("Using constant learning rate scheduler:lr", args.lr)
-        optimizer.set_lr(args.lr)
+        for group in optimizer.param_groups:
+            group["lr"] = args.lr
 
     # if args.validation_every == None: 
     #     args.validation_every = 100
@@ -251,7 +254,8 @@ def main():
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
 
         if args.lr_scheduler == "cosine":
-            optimizer.set_lr(optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"]))
+            for group in optimizer.param_groups:
+                group["lr"] = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
 
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
