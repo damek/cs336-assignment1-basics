@@ -276,7 +276,7 @@ def main():
         loss = training_step(model, data, targets)
         with torch.no_grad():
             # set learning rate of the output layer to be d_model*lr
-            optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
+            # optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
             print("Verifying that the first element of param groups is the output layer")
             print(optimizer.param_groups[0]["params"][0] == model.output_layer.param)
 
