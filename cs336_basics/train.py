@@ -218,14 +218,14 @@ def main():
 
     param_groups = [
         {
-            'params': [model.Embedding.param],  
+            'params': [model.output_layer.param],  
             'lr': 0
         },
         {
             'params': [
                 *[param for layer in model.layers for param in layer.parameters()],
                 *model.final_RMSNorm.parameters(),
-                model.output_layer.param
+                model.Embedding.param
             ],
             'lr': 0
         }
