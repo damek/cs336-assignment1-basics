@@ -239,7 +239,7 @@ def main():
     #     args.validation_every = 100
 
     lambda_ema = .98
-    # wandb.watch(model, log="all", log_freq=100)
+    wandb.watch(model, log="all", log_freq=100)
     time_total = 0
     print("validation_every", args.validation_every)
     print("print_every", args.print_every)
@@ -277,7 +277,8 @@ def main():
                 "EMA train loss": ema_loss,
                 "wall_time"      : time_total,       
             }, step=iter)
-
+            with torch.no_grad():
+                print("Norm W_QKV", torch.linalg.norm(model.layers[0].MHA.W_QKV.param))
             # log_layerwise_adamw_updates(optimizer, model, iter, log_freq=100)
 
 
