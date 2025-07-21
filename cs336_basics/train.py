@@ -280,7 +280,7 @@ def main():
             save_validation_loss(windowed_validation, loss_fn, args, time_total, iter, best_validation_loss, ema_loss, model, optimizer)
             break
         if iter % args.print_every == 0:
-            print(f"Iteration: {iter}, ema loss {ema_loss}, lr {optimizer.param_groups[0]['lr']}")
+            print(f"Iteration: {iter}, ema loss {ema_loss}, lr {optimizer.param_groups[1]['lr']}")
             wandb.log({
                 "EMA train loss": ema_loss,
                 "wall_time"      : time_total,       
