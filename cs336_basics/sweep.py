@@ -106,7 +106,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    time_limit_hours=args.time_limit_hours,
                    num_heads=num_heads,
                    num_layers=num_layers,
-                   rope_theta=rope_theta)
+                   rope_theta_parameter=rope_theta)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
