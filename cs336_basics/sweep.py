@@ -53,6 +53,7 @@ p.add_argument("--d_ff", type=int, nargs="+", default=[None])
 p.add_argument("--resume_from", type=str, default=None)
 p.add_argument("--compile", type=lambda x: x.lower() == 'true', default=False)
 p.add_argument("--time_limit_hours", type=float, nargs="+", default=None)
+p.add_argument("--rope_theta", type=float, nargs="+", default=[10000])
 args = p.parse_args()
 
 # ────────────────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
 
-for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip, num_layers, num_heads in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip, args.num_layers, args.num_heads):
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip, num_layers, num_heads, rope_theta in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip, args.num_layers, args.num_heads,args.rope_theta):
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
@@ -104,7 +105,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    compile=args.compile,
                    time_limit_hours=args.time_limit_hours,
                    num_heads=num_heads,
-                   num_layers=num_layers)
+                   num_layers=num_layers,
+                   rope_theta=rope_theta)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
