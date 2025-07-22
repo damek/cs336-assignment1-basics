@@ -93,7 +93,7 @@ class scheduler():
     def get_lr(self):
         raise NotImplementedError
     
-    def set_lr(self, iter):
+    def set_lr(self):
         lr = self.get_lr(iter)
         for group in self.optimizer.param_groups:
             group['lr'] = lr
