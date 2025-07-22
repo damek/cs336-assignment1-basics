@@ -88,17 +88,15 @@ class AdamW(torch.optim.Optimizer):
 class scheduler():
     def __init__(self, optimizer, iter = 0):
         self.optimizer = optimizer
-        for group in self.optimizer.param_groups:
-            self.state_dict[group] = group['lr']
         self.iter = iter
-    # this needs to set update lr in the state_dict 
+
     def get_lr(self):
         raise NotImplementedError
     
-    def set_lr(self):
-        lr = self._get_lr()
+    def set_lr(self, iter):
+        lr = self.get_lr(iter)
         for group in self.optimizer.param_groups:
-            group['lr'] = self.state_dict[group]
+            group['lr'] = lr
 
 class cosine(scheduler):
 
