@@ -255,7 +255,7 @@ def main():
     time_total = 0
     print("Starting training")
     if args.lr_scheduler == "cosine":
-        lr_scheduler = optimization.cosine(optimizer, current_iter, args.max_lr, args.min_lr, args.warmup_end, args.cosine_end)
+        lr_scheduler = optimization.cosine(optimizer, current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
     elif args.lr_scheduler == "constant":
         lr_scheduler = optimization.constant(optimizer, current_iter, args.lr)
     elif args.lr_scheduler == "wsd":
