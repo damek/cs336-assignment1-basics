@@ -255,11 +255,11 @@ def main():
     time_total = 0
     print("Starting training")
     if args.lr_scheduler == "cosine":
-        lr_scheduler = optimization.cosine(optimizer, current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
+        lr_scheduler = optimization.cosine(optimizer, current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_end"], args.cosine_decay["cosine_end"])
     elif args.lr_scheduler == "constant":
         lr_scheduler = optimization.constant(optimizer, current_iter, args.lr)
     elif args.lr_scheduler == "wsd":
-        lr_scheduler = optimization.wsd(optimizer, current_iter, args.min_lr, args.max_lr, args.warmup_end, args.stable_end, args.decay_end)
+        lr_scheduler = optimization.wsd(optimizer, current_iter, args.wsd_decay['min_lr'], args.wsd_decay['max_lr'], args.wsd_decay['warmup_end'], args.wsd_decay['stable_end'], args.wsd_decay['decay_end'])
     else:
         raise ValueError(f"Invalid learning rate scheduler: {args.lr_scheduler}")
     
