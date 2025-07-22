@@ -51,7 +51,7 @@ wsd.add_argument("--stable_end", type=int, nargs="+", default=[None],
                help="[wsd] Final iteration of the stable phase")
 wsd.add_argument("--decay_end", type=int, nargs="+", default=[None],
                help="[wsd] Final iteration of the decay phase")
-wsd.set_defaults(lr=[None], warmup_end=[None])
+wsd.set_defaults(lr=[None], cosine_end=[None])
 
 p.add_argument("--grad_clip", type=float, nargs="+", default=[None])
 p.add_argument("--bs",  type=int,   nargs="+", default=[32],
