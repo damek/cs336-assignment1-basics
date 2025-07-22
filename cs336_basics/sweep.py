@@ -71,6 +71,7 @@ p.add_argument("--resume_from", type=str, default=None)
 p.add_argument("--compile", type=lambda x: x.lower() == 'true', default=False)
 p.add_argument("--time_limit_hours", type=float, nargs="+", default=None)
 p.add_argument("--rope_theta", type=float, nargs="+", default=[10000])
+p.add_argument("--save_freq", type=int, default=1000)
 args = p.parse_args()
 
 
@@ -128,7 +129,8 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_end, c
                    num_heads=num_heads,
                    num_layers=num_layers,
                    rope_theta_parameter=rope_theta,
-                   wsd_decay=wsd_decay)
+                   wsd_decay=wsd_decay, 
+                   save_freq=args.save_freq)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
