@@ -27,6 +27,8 @@ subs = p.add_subparsers(dest='lr_scheduler', required=True)
 constant = subs.add_parser("constant")
 constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
                help="[constant] one or more learning-rates")
+constant.set_defaults(lr=None, min_lr=None, max_lr=None, warmup_end=None, cosine_end=None, stable_end=None, decay_end=None)
+
 cosine = subs.add_parser("cosine")
 cosine.add_argument("--max_lr", type=float, nargs="+", default=[1e-1],
                help="[cosine] Maximum learning rate")
@@ -36,6 +38,7 @@ cosine.add_argument("--warmup_end", type=int, nargs="+", default=[0],
                help="[cosine] Number of warmup steps")
 cosine.add_argument("--cosine_end", type=int, nargs="+", default=[None],
                help="[cosine] Final iteration of the cosine cycle")
+cosine.set_defaults(lr=None)
 
 wsd = subs.add_parser("wsd")
 wsd.add_argument("--min_lr", type=float, nargs="+", default=[1e-4],
@@ -48,6 +51,7 @@ wsd.add_argument("--stable_end", type=int, nargs="+", default=[None],
                help="[wsd] Final iteration of the stable phase")
 wsd.add_argument("--decay_end", type=int, nargs="+", default=[None],
                help="[wsd] Final iteration of the decay phase")
+wsd.set_defaults(lr=[None], warmup_end=[None])
 
 p.add_argument("--grad_clip", type=float, nargs="+", default=[None])
 p.add_argument("--bs",  type=int,   nargs="+", default=[32],
