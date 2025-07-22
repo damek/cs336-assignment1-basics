@@ -126,8 +126,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_end, c
                    num_heads=num_heads,
                    num_layers=num_layers,
                    rope_theta_parameter=rope_theta,
-                   stable_end=stable_end,
-                   decay_end=decay_end)
+                   wsd_decay=wsd_decay)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
