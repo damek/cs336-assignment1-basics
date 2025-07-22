@@ -92,6 +92,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_end, c
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
+        wsd_decay = None
         if cosine_end is None:
             cosine_end = args.run_until_step
         if warmup_end is None:
@@ -99,6 +100,7 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_end, c
         cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_end": warmup_end, "cosine_end": cosine_end}
     elif args.lr_scheduler == "wsd":
         lr = None
+        cosine_decay = None
         if stable_end is None:
             stable_end = 0
         if decay_end is None:
