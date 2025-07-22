@@ -251,7 +251,7 @@ def main():
         ema_loss = 0
 
     lambda_ema = .98
-    wandb.watch(model, log="all", log_freq=100)
+    # wandb.watch(model, log="all", log_freq=100)
     time_total = 0
     print("Starting training")
     if args.lr_scheduler == "cosine":
