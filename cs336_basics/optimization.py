@@ -103,7 +103,7 @@ class scheduler():
 class cosine(scheduler):
 
     def __init__(self, optimizer, iter, max_lr, min_lr, warmup_end, cosine_end):
-        super.__init__(optimizer, iter)
+        super().__init__(optimizer, iter)
         self.max_lr = max_lr 
         self.min_lr = min_lr
         self.warmup_end = warmup_end
@@ -121,7 +121,7 @@ class cosine(scheduler):
 class constant(scheduler): 
 
     def __init__(self, optimizer, iter, base_lr):
-        super.__init__(optimizer, iter)
+        super().__init__(optimizer, iter)
         self.base_lr = base_lr
 
     def get_lr(self):
@@ -130,7 +130,7 @@ class constant(scheduler):
 class wsd(scheduler): 
 
     def __init__(self, optimizer, iter, min_lr, max_lr, warmup_end, stable_end, decay_end):
-        super.__init__(optimizer, iter)
+        super().__init__(optimizer, iter)
         self.min_lr = min_lr
         self.max_lr = max_lr
         self.warmup_end = warmup_end
