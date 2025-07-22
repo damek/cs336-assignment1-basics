@@ -84,7 +84,7 @@ class AdamW(torch.optim.Optimizer):
         return loss
 
 # we're going to let the optimizer/current iter manage the lr in it's state. 
-# This class just gives the pattern: a scheduler should be able to get/set the stepsize 
+# This class just gives the pattern: a scheduler should be able to get/set the stepsize. the step should also update the iter. 
 class scheduler():
     def __init__(self, optimizer, iter = 0):
         self.optimizer = optimizer
@@ -93,8 +93,9 @@ class scheduler():
     def get_lr(self):
         raise NotImplementedError
     
-    def set_lr(self):
-        lr = self.get_lr(iter)
+    def step(self):
+        lr = self.get_lr(self.iter)
+        self.iter += 1
         for group in self.optimizer.param_groups:
             group['lr'] = lr
 
@@ -110,7 +111,7 @@ class cosine(scheduler):
     def get_lr(self): 
         it = self.iter
         if it < self.warmup_end: 
-            return (it/self.warmup_end)*self.max_lr
+            return (it/max(float(self.warmup_end), 1))*self.max_lr
         elif self.warmup_end <= it <= self.cosine_end:
             return self.min_lr + .5*(1 + math.cos((it - self.warmup_end)*math.pi/(self.cosine_end - self.warmup_end)))*(self.max_lr-self.min_lr)
         else:

@@ -268,7 +268,7 @@ def main():
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
 
-        lr_scheduler.set_lr(iter)
+        lr_scheduler.step()
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
 
