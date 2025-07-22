@@ -119,12 +119,12 @@ class cosine(scheduler):
         
 class constant(scheduler): 
 
-    def __init__(self, optimizer, iter, base_lr):
+    def __init__(self, optimizer, iter, lr):
         super().__init__(optimizer, iter)
-        self.base_lr = base_lr
+        self.lr = lr
 
     def get_lr(self):
-            return self.base_lr
+        return self.lr
     
 class wsd(scheduler): 
 

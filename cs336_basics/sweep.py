@@ -31,10 +31,21 @@ cosine.add_argument("--max_lr", type=float, nargs="+", default=[1e-1],
                help="[cosine] Maximum learning rate")
 cosine.add_argument("--min_lr", type=float, nargs="+", default=[1e-6],
                help="[cosine] Minimum learning rate")
-cosine.add_argument("--warmup_steps", type=int, nargs="+", default=[0],
+cosine.add_argument("--warmup_end", type=int, nargs="+", default=[0],
                help="[cosine] Number of warmup steps")
-cosine.add_argument("--cosine_cycle_final_iter", type=int, nargs="+", default=[None],
+cosine.add_argument("--cosine_end", type=int, nargs="+", default=[None],
                help="[cosine] Final iteration of the cosine cycle")
+wsd = p.add_argument_group("wsd")
+wsd.add_argument("--min_lr", type=float, nargs="+", default=[1e-4],
+               help="[wsd] Minimum learning rate")
+wsd.add_argument("--max_lr", type=float, nargs="+", default=[1e-2],
+               help="[wsd] Maximum learning rate")
+wsd.add_argument("--warmup_end", type=int, nargs="+", default=[0],
+               help="[wsd] Number of warmup steps")
+wsd.add_argument("--stable_end", type=int, nargs="+", default=[None],
+               help="[wsd] Final iteration of the stable phase")
+wsd.add_argument("--decay_end", type=int, nargs="+", default=[None],
+               help="[wsd] Final iteration of the decay phase")
 
 p.add_argument("--grad_clip", type=float, nargs="+", default=[None])
 p.add_argument("--bs",  type=int,   nargs="+", default=[32],
@@ -70,24 +81,25 @@ CfgClass = getattr(importlib.import_module(module_path), cls_name)
 # 3. Sweep over the grid and spawn runs
 # ----------------------------------------------------------------
 
-for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps, cosine_cycle_final_iter, grad_clip, num_layers, num_heads, rope_theta in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_steps, args.cosine_cycle_final_iter, args.grad_clip, args.num_layers, args.num_heads,args.rope_theta):
+for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_end, cosine_end, grad_clip, num_layers, num_heads, rope_theta, stable_end, decay_end in itertools.product(args.lr, args.bs, args.weight_decay, args.d_model, args.context_length, args.max_lr, args.min_lr, args.warmup_end, args.cosine_end, args.grad_clip, args.num_layers, args.num_heads,args.rope_theta, args.stable_end, args.decay_end):
     # build the dataclass 
     if args.lr_scheduler == "cosine":
         lr = None
-        # max_lr = max_lr
-        # min_lr = min_lr
-        # warmup_steps = warmup_steps
-        # cosine_cycle_iters = cosine_cycle_iters
-        if cosine_cycle_final_iter is None:
-            cosine_cycle_final_iter = args.run_until_step
-        if warmup_steps is None:
-            warmup_steps = 0
-        if cosine_cycle_final_iter > args.run_until_step:
-            cosine_cycle_final_iter = args.run_until_step  
-            print(f"osine_cycle_final_iter > args.run_until_step, setting cosine_cycle_final_iter to {cosine_cycle_final_iter}")
-        cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_steps": warmup_steps, "cosine_cycle_final_iter": cosine_cycle_final_iter}
+        if cosine_end is None:
+            cosine_end = args.run_until_step
+        if warmup_end is None:
+            warmup_end = 0
+        cosine_decay = {"max_lr": max_lr, "min_lr": min_lr, "warmup_end": warmup_end, "cosine_end": cosine_end}
+    elif args.lr_scheduler == "wsd":
+        lr = None
+        if stable_end is None:
+            stable_end = 0
+        if decay_end is None:
+            decay_end = args.run_until_step
+        wsd_decay = {"min_lr": min_lr, "max_lr": max_lr, "warmup_end": warmup_end, "stable_end": stable_end, "decay_end": decay_end}
     else:
         cosine_decay = None
+        wsd_decay = None
     print(f"num_heads: {num_heads}, num_layers: {num_layers}")
     cfg = CfgClass(lr=lr,
                    batch_size=bs,
@@ -106,7 +118,9 @@ for lr, bs, weight_decay, d_model, context_length, max_lr, min_lr, warmup_steps,
                    time_limit_hours=args.time_limit_hours,
                    num_heads=num_heads,
                    num_layers=num_layers,
-                   rope_theta_parameter=rope_theta)
+                   rope_theta_parameter=rope_theta,
+                   stable_end=stable_end,
+                   decay_end=decay_end)
 
     cls_flag = f"{CfgClass.__module__}:{CfgClass.__name__}"
     subprocess.run(
