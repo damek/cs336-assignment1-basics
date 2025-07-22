@@ -22,28 +22,26 @@ import math
 p = argparse.ArgumentParser()
 p.add_argument("--cfg_cls",  default="TSPreNormRMS",
                help="Either <ClassName> (assumed in configs.py) or <module:ClassName>")
-p.add_argument("--lr_scheduler", type=str, choices=["constant", "cosine", "wsd"], default="constant")
-subs = p.add_subparsers(dest='lr_scheduler', required=True)
-
-constant = p.add_argument_group("constant")
+subs = p.add_subparsers("--lr_scheduler", type=str, choices=["constant", "cosine", "wsd"], default="constant")
+constant = subs.add_parser("constant")
 constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
                help="[constant] one or more learning-rates")
-cosine = p.add_argument_group("cosine")
-cosine.add_argument("--cosine_max_lr", type=float, nargs="+", default=[1e-1],
+cosine = subs.add_parser("cosine")
+cosine.add_argument("--max_lr", type=float, nargs="+", default=[1e-1],
                help="[cosine] Maximum learning rate")
-cosine.add_argument("--cosine_min_lr", type=float, nargs="+", default=[1e-6],
+cosine.add_argument("--min_lr", type=float, nargs="+", default=[1e-6],
                help="[cosine] Minimum learning rate")
-cosine.add_argument("--cosine_warmup_end", type=int, nargs="+", default=[0],
+cosine.add_argument("--warmup_end", type=int, nargs="+", default=[0],
                help="[cosine] Number of warmup steps")
 cosine.add_argument("--cosine_end", type=int, nargs="+", default=[None],
                help="[cosine] Final iteration of the cosine cycle")
 
-wsd = p.add_argument_group("wsd")
-wsd.add_argument("--wsd_min_lr", type=float, nargs="+", default=[1e-4],
+wsd = subs.add_parser("wsd")
+wsd.add_argument("--min_lr", type=float, nargs="+", default=[1e-4],
                help="[wsd] Minimum learning rate")
-wsd.add_argument("--wsd_max_lr", type=float, nargs="+", default=[1e-2],
+wsd.add_argument("--max_lr", type=float, nargs="+", default=[1e-2],
                help="[wsd] Maximum learning rate")
-wsd.add_argument("--wsd_warmup_end", type=int, nargs="+", default=[0],
+wsd.add_argument("--warmup_end", type=int, nargs="+", default=[0],
                help="[wsd] Number of warmup steps")
 wsd.add_argument("--stable_end", type=int, nargs="+", default=[None],
                help="[wsd] Final iteration of the stable phase")
