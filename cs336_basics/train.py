@@ -163,6 +163,17 @@ def main():
     run = wandb.init(project=args.wandb_project, group=group, name=timestamped_name, config=args)
     wandb.run.log_code(".")
     print("Training with args", args)
+
+    if args.lr_scheduler == "cosine":
+        lr_scheduler = optimization.cosine(optimizer, iter, args.max_lr, args.min_lr, args.warmup_end, args.cosine_end)
+    elif args.lr_scheduler == "constant":
+        lr_scheduler = optimization.constant(optimizer, iter, args.lr)
+    elif args.lr_scheduler == "wsd":
+        lr_scheduler = optimization.wsd(optimizer, iter, args.min_lr, args.max_lr, args.warmup_end, args.stable_end, args.decay_end)
+    else:
+        raise ValueError(f"Invalid learning rate scheduler: {args.lr_scheduler}")
+
+
     train = torch.as_tensor(np.memmap(args.train_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     validation = torch.as_tensor(np.memmap(args.val_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
     args.valid_size = validation.size
@@ -244,36 +255,18 @@ def main():
         # model.eval()
     if ema_loss == None:
         ema_loss = 0
-    if args.lr_scheduler == "cosine":
-        print("Using cosine learning rate scheduler")
-        for group in optimizer.param_groups:
-            group["lr"] = optimization.learning_rate_schedule(current_iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
-    else: 
-        print("Using constant learning rate scheduler:lr", args.lr)
-        for group in optimizer.param_groups:
-            group["lr"] = args.lr
-
-    # if args.validation_every == None: 
-    #     args.validation_every = 100
 
     lambda_ema = .98
     wandb.watch(model, log="all", log_freq=100)
     time_total = 0
-    print("validation_every", args.validation_every)
-    print("print_every", args.print_every)
-
     print("Starting training")
+    lr_scheduler = optimization.scheduler(optimizer, current_iter)
     
     for iter in range(current_iter, args.run_until_step):
         time_start = time.perf_counter()
         data, targets = tokenizer_utils.data_from_gpu_tensor(train, batch_size=args.batch_size, context_length=args.context_length)
 
-        if args.lr_scheduler == "cosine":
-            for group in optimizer.param_groups:
-                group["lr"] = optimization.learning_rate_schedule(iter, args.cosine_decay["max_lr"], args.cosine_decay["min_lr"], args.cosine_decay["warmup_steps"], args.cosine_decay["cosine_cycle_final_iter"])
-            # with torch.no_grad():
-                # optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"]*args.d_model
-
+        lr_scheduler.set_lr(iter)
         optimizer.zero_grad()
         loss = training_step(model, data, targets)
 

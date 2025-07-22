@@ -83,6 +83,74 @@ class AdamW(torch.optim.Optimizer):
 
         return loss
 
+# we're going to let the optimizer/current iter manage the lr in it's state. 
+# This class just gives the pattern: a scheduler should be able to get/set the stepsize 
+class scheduler():
+    def __init__(self, optimizer, iter = 0):
+        self.optimizer = optimizer
+        for group in self.optimizer.param_groups:
+            self.state_dict[group] = group['lr']
+        self.iter = iter
+    # this needs to set update lr in the state_dict 
+    def get_lr(self):
+        raise NotImplementedError
+    
+    def set_lr(self):
+        lr = self._get_lr()
+        for group in self.optimizer.param_groups:
+            group['lr'] = self.state_dict[group]
+
+class cosine(scheduler):
+
+    def __init__(self, optimizer, iter, max_lr, min_lr, warmup_end, cosine_end):
+        super.__init__(optimizer, iter)
+        self.max_lr = max_lr 
+        self.min_lr = min_lr
+        self.warmup_end = warmup_end
+        self.cosine_end = cosine_end
+
+    def get_lr(self): 
+        it = self.iter
+        if it < self.warmup_end: 
+            return (it/self.warmup_end)*self.max_lr
+        elif self.warmup_end <= it <= self.cosine_end:
+            return self.min_lr + .5*(1 + math.cos((it - self.warmup_end)*math.pi/(self.cosine_end - self.warmup_end)))*(self.max_lr-self.min_lr)
+        else:
+            return self.min_lr
+        
+class constant(scheduler): 
+
+    def __init__(self, optimizer, iter, base_lr):
+        super.__init__(optimizer, iter)
+        self.base_lr = base_lr
+
+    def get_lr(self):
+            return self.base_lr
+    
+class wsd(scheduler): 
+
+    def __init__(self, optimizer, iter, min_lr, max_lr, warmup_end, stable_end, decay_end):
+        super.__init__(optimizer, iter)
+        self.min_lr = min_lr
+        self.max_lr = max_lr
+        self.warmup_end = warmup_end
+        self.stable_end = stable_end
+        self.decay_end = decay_end
+
+    def get_lr(self):
+        it = self.iter
+        if it < self.warmup_end: 
+            return (it/max(float(self.warmup_end), 1))*self.max_lr
+        elif self.warmup_end <= it <= self.stable_end:
+            return self.max_lr
+        elif self.stable_end <= it <= self.decay_end:
+            # decay linearly from max_lr to min_lr
+            return self.max_lr - (self.max_lr - self.min_lr)*(it - self.stable_end)/(self.decay_end - self.stable_end)
+        else:
+            return self.min_lr
+        
+
+
 def learning_rate_schedule(it: int,
     max_learning_rate: float,
     min_learning_rate: float,
