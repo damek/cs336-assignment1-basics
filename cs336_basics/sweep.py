@@ -27,7 +27,7 @@ subs = p.add_subparsers(dest='lr_scheduler', required=True)
 constant = subs.add_parser("constant")
 constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
                help="[constant] one or more learning-rates")
-constant.set_defaults(lr=None, min_lr=None, max_lr=None, warmup_end=None, cosine_end=None, stable_end=None, decay_end=None)
+constant.set_defaults(lr=[None], min_lr=[None], max_lr=[None], warmup_end=[None], cosine_end=[None], stable_end=[None], decay_end=[None])
 
 cosine = subs.add_parser("cosine")
 cosine.add_argument("--max_lr", type=float, nargs="+", default=[1e-1],
