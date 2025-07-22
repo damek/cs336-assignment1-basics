@@ -38,7 +38,7 @@ cosine.add_argument("--warmup_end", type=int, nargs="+", default=[0],
                help="[cosine] Number of warmup steps")
 cosine.add_argument("--cosine_end", type=int, nargs="+", default=[None],
                help="[cosine] Final iteration of the cosine cycle")
-cosine.set_defaults(lr=None, stable_end=None, decay_end=None)
+cosine.set_defaults(lr=[None], stable_end=[None], decay_end=[None])
 
 wsd = subs.add_parser("wsd")
 wsd.add_argument("--min_lr", type=float, nargs="+", default=[1e-4],
