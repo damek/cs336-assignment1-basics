@@ -164,14 +164,7 @@ def main():
     wandb.run.log_code(".")
     print("Training with args", args)
 
-    if args.lr_scheduler == "cosine":
-        lr_scheduler = optimization.cosine(optimizer, iter, args.max_lr, args.min_lr, args.warmup_end, args.cosine_end)
-    elif args.lr_scheduler == "constant":
-        lr_scheduler = optimization.constant(optimizer, iter, args.lr)
-    elif args.lr_scheduler == "wsd":
-        lr_scheduler = optimization.wsd(optimizer, iter, args.min_lr, args.max_lr, args.warmup_end, args.stable_end, args.decay_end)
-    else:
-        raise ValueError(f"Invalid learning rate scheduler: {args.lr_scheduler}")
+
 
 
     train = torch.as_tensor(np.memmap(args.train_data,dtype=np.uint16,mode="r"), dtype=torch.long, device=args.device)
@@ -243,6 +236,14 @@ def main():
     ]
 
     optimizer = optimization.AdamW(param_groups, betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
+    if args.lr_scheduler == "cosine":
+        lr_scheduler = optimization.cosine(optimizer, iter, args.max_lr, args.min_lr, args.warmup_end, args.cosine_end)
+    elif args.lr_scheduler == "constant":
+        lr_scheduler = optimization.constant(optimizer, iter, args.lr)
+    elif args.lr_scheduler == "wsd":
+        lr_scheduler = optimization.wsd(optimizer, iter, args.min_lr, args.max_lr, args.warmup_end, args.stable_end, args.decay_end)
+    else:
+        raise ValueError(f"Invalid learning rate scheduler: {args.lr_scheduler}")
     # optimizer = torch.optim.SGD(model.parameters(), weight_decay=args.weight_decay, momentum=.95)
     print("Weight decay", args.weight_decay)
     current_iter = 0
