@@ -94,7 +94,7 @@ class scheduler():
         raise NotImplementedError
     
     def step(self):
-        lr = self.get_lr(self.iter)
+        lr = self.get_lr()
         self.iter += 1
         for group in self.optimizer.param_groups:
             group['lr'] = lr
