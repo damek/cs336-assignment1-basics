@@ -15,6 +15,7 @@ python sweep.py --cfg_cls configs:TSRemoveRope --lr 5e-5 --bs 32
 import argparse, importlib, itertools, json, subprocess, uuid
 from pathlib import Path
 import math
+import optimization
 
 # ────────────────────────────────────────────────────────────────
 # 1. Parse sweep-level CLI flags
@@ -22,7 +23,7 @@ import math
 p = argparse.ArgumentParser()
 p.add_argument("--cfg_cls",  default="TSPreNormRMS",
                help="Either <ClassName> (assumed in configs.py) or <module:ClassName>")
-subs = p.add_subparsers("--lr_scheduler", type=str, choices=["constant", "cosine", "wsd"], default="constant")
+subs = p.add_subparsers(dest='lr_scheduler', required=True)
 constant = subs.add_parser("constant")
 constant.add_argument("--lr",  type=float, nargs="+", default=[3e-4],
                help="[constant] one or more learning-rates")
@@ -67,6 +68,7 @@ p.add_argument("--compile", type=lambda x: x.lower() == 'true', default=False)
 p.add_argument("--time_limit_hours", type=float, nargs="+", default=None)
 p.add_argument("--rope_theta", type=float, nargs="+", default=[10000])
 args = p.parse_args()
+
 
 # ────────────────────────────────────────────────────────────────
 # 2. Resolve the config class object
