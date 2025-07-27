@@ -25,6 +25,12 @@ uv run data/OpenWebText32k.py
 uv run sweep.py --cfg_cls configs:TSCfg --bs 32 --run_until_step 40000 --device cuda --print_every 100 --compile True cosine --min_lr 1e-7 --max_lr .0025 --warmup_end 400
 ```
 
+## Sample from a checkpoint
+
+```python
+uv run sampler.py --checkpoint "checkpoints/TinyStories_TSCfg lrNone bs32 wd0.01 d_model512 context_length256 d_ff1408 lr_schedulercosine pre_RMSTrue post_RMSFalse grad_clipNone/ckpt_latest.pt" --prompt "Once upon a time" --vocab_path "data/TinyStories/vocab.txt" --merges_path "data/TinyStories/merges.txt" --device cuda --p .95 --temperature 1 --num_samples 3
+```
+
 ## Running with runai 
 
 Penn has a cluster that requires us to use runai. Here is the code to launch an interactive shell: 
@@ -33,7 +39,16 @@ Penn has a cluster that requires us to use runai. Here is the code to launch an 
 runai submit cs336-dev-compile \  -i ghcr.io/damek/cs336-assignment1-basics:latest \  -g 1 --interactive --attach \  --command -- bash
 # once you log in
 git -C /src/repo fetch origin; git -C /src/repo reset --hard origin/main
+# runing comands 
+cd cs336_basics
+# Download data 
+python -m data/TinyStories.py
+python -m data/OpenWebText32k.py
+# Run sweeps 
+## Tip: Do not compile on an MPS device.
+python -m run sweep.py --cfg_cls configs:TSCfg --bs 32 --run_until_step 40000 --device cuda --print_every 100 --compile True cosine --min_lr 1e-7 --max_lr .0025 --warmup_end 400
 ```
+
 
 An image o the r
 
