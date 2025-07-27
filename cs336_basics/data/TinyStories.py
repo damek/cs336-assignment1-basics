@@ -4,7 +4,7 @@ from huggingface_hub import snapshot_download
 from pathlib import Path
 
 REPO_ID   = "damekdavis/TinyStories"   
-TARGET    = Path("TinyStories")
+TARGET    = Path(__file__).parent / "TinyStories"
 
 def main():
     TARGET.mkdir(parents=True, exist_ok=True)

@@ -1,3 +1,29 @@
+# Twitter thread
+
+I completed this assignment. You can read my thoughts while completing the assignment here: 
+
+https://x.com/damekdavis/status/1937275870663598216
+
+You can also check the changelog!
+
+## Runing a sweep with my code 
+
+```python
+# clone the repo (assuming you've done this)
+# Set up uv 
+cd cs336-assignment1-basics
+uv venv 
+source .venv/bin/activate
+uv pip install -e .
+# cd into working directory
+cd cs336_basics
+# Download data 
+uv run data/TinyStories.py
+uv run data/OpenWebText32k.py
+# Run sweeps
+uv run sweep --cfg_cls configs:TSCfg --bs 32 --run_until_step 10000 --compile True cosine --min_lr 1e-10 --max_lr 1e-5 --warmup_end 400
+```
+
 # CS336 Spring 2025 Assignment 1: Basics
 
 For a full description of the assignment, see the assignment handout at
