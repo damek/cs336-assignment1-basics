@@ -20,8 +20,9 @@ cd cs336_basics
 # Download data 
 uv run data/TinyStories.py
 uv run data/OpenWebText32k.py
-# Run sweeps
-uv run sweep --cfg_cls configs:TSCfg --bs 32 --run_until_step 10000 --compile True cosine --min_lr 1e-10 --max_lr 1e-5 --warmup_end 400
+# Run sweeps 
+## Tip: Do not compile on an MPS device.
+uv run sweep.py --cfg_cls configs:TSCfg --bs 32 --run_until_step 40000 --device cuda --print_every 100 --compile True cosine --min_lr 1e-7 --max_lr .0025 --warmup_end 400
 ```
 
 # CS336 Spring 2025 Assignment 1: Basics
