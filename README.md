@@ -9,7 +9,7 @@ You can also check the changelog!
 ## Runing a sweep with my code 
 
 ```python
-# clone the repo (assuming you've done this)
+git clone https://github.com/damek/cs336-assignment1-basics.git
 # Set up uv 
 cd cs336-assignment1-basics
 uv venv 
