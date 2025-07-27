@@ -42,11 +42,11 @@ git -C /src/repo fetch origin; git -C /src/repo reset --hard origin/main
 # runing comands 
 cd cs336_basics
 # Download data 
-python -m data/TinyStories.py
-python -m data/OpenWebText32k.py
+python data/TinyStories.py
+python data/OpenWebText32k.py
 # Run sweeps 
 ## Tip: Do not compile on an MPS device.
-python -m run sweep.py --cfg_cls configs:TSCfg --bs 32 --run_until_step 40000 --device cuda --print_every 100 --compile True cosine --min_lr 1e-7 --max_lr .0025 --warmup_end 400
+python -m run sweep --cfg_cls configs:TSCfg --bs 32 --run_until_step 40000 --device cuda --print_every 100 --compile True cosine --min_lr 1e-7 --max_lr .0025 --warmup_end 400
 ```
 
 
