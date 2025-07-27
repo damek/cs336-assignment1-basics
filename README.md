@@ -1,6 +1,6 @@
 # Twitter thread
 
-I completed this assignment. You can read my thoughts while completing the assignment here: 
+I completed this assignment. I wrote some thoughts in a twitter thread:
 
 https://x.com/damekdavis/status/1937275870663598216
 
