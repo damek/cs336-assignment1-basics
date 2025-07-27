@@ -25,6 +25,18 @@ uv run data/OpenWebText32k.py
 uv run sweep.py --cfg_cls configs:TSCfg --bs 32 --run_until_step 40000 --device cuda --print_every 100 --compile True cosine --min_lr 1e-7 --max_lr .0025 --warmup_end 400
 ```
 
+## Running with runai 
+
+Penn has a cluster that requires us to use runai. Here is the code to launch an interactive shell: 
+
+```python
+runai submit cs336-dev-compile \  -i ghcr.io/damek/cs336-assignment1-basics:latest \  -g 1 --interactive --attach \  --command -- bash
+# once you log in
+git -C /src/repo fetch origin; git -C /src/repo reset --hard origin/main
+```
+
+An image o the r
+
 # CS336 Spring 2025 Assignment 1: Basics
 
 For a full description of the assignment, see the assignment handout at

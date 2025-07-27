@@ -220,24 +220,8 @@ def main():
                 loss = transformer.cross_entropy(model(data), targets)
             return loss
 
-    param_groups = [
-        {
-            'params': [model.output_layer.param],  
-            'lr': 0
-        },
-        {
-            'params': [
-                *[param for layer in model.layers for param in layer.parameters()],
-                *model.final_RMSNorm.parameters(),
-                model.Embedding.param
-            ],
-            'lr': 0
-        }
-    ]
+    optimizer = optimization.AdamW(model.parameters(), betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
 
-    optimizer = optimization.AdamW(param_groups, betas = args.betas, eps = args.eps, weight_decay=args.weight_decay)
-
-    # optimizer = torch.optim.SGD(model.parameters(), weight_decay=args.weight_decay, momentum=.95)
     print("Weight decay", args.weight_decay)
     current_iter = 0
     ema_loss = 0
@@ -295,9 +279,7 @@ def main():
                 "EMA train loss": ema_loss,
                 "wall_time"      : time_total,       
             }, step=iter)
-            # with torch.no_grad():
-            #     print("Norm W_QKV", torch.linalg.norm(model.layers[0].MHA.W_QKV.param))
-            # log_layerwise_adamw_updates(optimizer, model, iter, log_freq=100)
+
 
 
 
