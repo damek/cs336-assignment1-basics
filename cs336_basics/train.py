@@ -295,8 +295,8 @@ def main():
                 "EMA train loss": ema_loss,
                 "wall_time"      : time_total,       
             }, step=iter)
-            with torch.no_grad():
-                print("Norm W_QKV", torch.linalg.norm(model.layers[0].MHA.W_QKV.param))
+            # with torch.no_grad():
+            #     print("Norm W_QKV", torch.linalg.norm(model.layers[0].MHA.W_QKV.param))
             # log_layerwise_adamw_updates(optimizer, model, iter, log_freq=100)
 
 
